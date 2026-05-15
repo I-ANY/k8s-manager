@@ -1,5 +1,5 @@
-//go:build e2e
-// +build e2e
+//go:deploy e2e
+// +deploy e2e
 
 /*
 Copyright 2025.

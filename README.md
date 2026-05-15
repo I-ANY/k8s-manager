@@ -99,7 +99,7 @@ k8soperation/
 │   ├── health/
 │   └── k8soperation/
 ├── pkg/
-├── build/
+├── deploy/
 └── storage/
 ```
 
@@ -110,7 +110,7 @@ k8soperation/
 ```bash
 git clone https://gitee.com/jay-kim/k8s_operation.git
 cd k8s_operation
-make build
+make deploy
 ./bin/k8soperation
 ```
 

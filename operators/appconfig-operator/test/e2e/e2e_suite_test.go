@@ -1,5 +1,5 @@
-//go:build e2e
-// +build e2e
+//go:deploy e2e
+// +deploy e2e
 
 /*
 Copyright 2025.
@@ -40,7 +40,7 @@ var (
 	// isCertManagerAlreadyInstalled will be set true when CertManager CRDs be found on the cluster
 	isCertManagerAlreadyInstalled = false
 
-	// projectImage is the name of the image which will be build and loaded
+	// projectImage is the name of the image which will be deploy and loaded
 	// with the code source changes to be tested.
 	projectImage = "example.com/appconfig-operator:v0.0.1"
 )
@@ -57,9 +57,9 @@ func TestE2E(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	By("building the manager(Operator) image")
-	cmd := exec.Command("make", "docker-build", fmt.Sprintf("IMG=%s", projectImage))
+	cmd := exec.Command("make", "docker-deploy", fmt.Sprintf("IMG=%s", projectImage))
 	_, err := utils.Run(cmd)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the manager(Operator) image")
+	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to deploy the manager(Operator) image")
 
 	// TODO(user): If you want to change the e2e test vendor from Kind, ensure the image is
 	// built and available before running the tests. Also, remove the following block.

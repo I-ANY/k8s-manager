@@ -21,10 +21,10 @@ PORT        ?= 8080
 GIN_MODE    ?= release
 
 # ====== Docker / nerdctl ======
-DOCKER      ?= docker                       # 切换为 nerdctl： DOCKER=nerdctl make docker-build
+DOCKER      ?= docker                       # 切换为 nerdctl： DOCKER=nerdctl make docker-deploy
 IMAGE       ?= $(APP_NAME):latest
-DOCKERFILE  ?= build/docker/Dockerfile      # BuildKit 版：build/containerd/Dockerfile
-CONTEXT     ?= .                            # 项目根作为 build context
+DOCKERFILE  ?= build/docker/Dockerfile      # BuildKit 版：deploy/containerd/Dockerfile
+CONTEXT     ?= .                            # 项目根作为 deploy context
 
 # ====== Swagger 配置 ======
 SWAG        ?= swag
@@ -83,7 +83,7 @@ VOL_DOCS     := $(strip $(VOL_DOCS))
 # ====== Go 基本命令 ======
 all: build
 
-# 在 build 前自动生成 swagger 文档
+# 在 deploy 前自动生成 swagger 文档
 build: swag
 	@echo ">> Building $(BIN_FILE) ($(GOOS))"
 	@mkdir -p $(BIN_DIR)

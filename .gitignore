@@ -5,3 +5,9 @@ configs/*
 !configs/config.yaml.example
 
 # 忽略所有 .env 文件
+
+logs*
+.idea
+.vacode
+.codex
+.claude

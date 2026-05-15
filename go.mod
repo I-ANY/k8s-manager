@@ -1,8 +1,6 @@
 module k8soperation
 
-go 1.24.6
-
-//require gitee.com/jay-kim/appconfig-operator v1.0.1
+go 1.25.0
 
 require (
 	github.com/gin-contrib/sessions v1.0.4
