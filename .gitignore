@@ -1,0 +1,7 @@
+# 忽略整个 configs 目录
+configs/*
+
+# 但保留 example 文件
+!configs/config.yaml.example
+
+# 忽略所有 .env 文件

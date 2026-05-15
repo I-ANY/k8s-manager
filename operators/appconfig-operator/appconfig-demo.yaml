@@ -1,0 +1,16 @@
+apiVersion: operation.operation.top/v1alpha1
+kind: AppConfig
+metadata:
+  name: demo
+  namespace: appconfig-system
+spec:
+  appName: demo-app
+  image: nginx:1.27
+  replicas: 2
+  strategy: RollingUpdate
+  env:
+    - name: LOG_LEVEL
+      value: info
+    - name: ENV
+      value: dev
+
