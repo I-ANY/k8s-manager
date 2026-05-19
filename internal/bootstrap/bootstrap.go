@@ -1,14 +1,15 @@
 package bootstrap
 
 import (
-	"go.uber.org/zap"
 	"k8soperation/global"
 	"k8soperation/initialize"
+
+	"go.uber.org/zap"
 )
 
-func InitAll() error {
+func InitAll(configFile ...string) error {
 	// 初始化配置
-	if err := initialize.SetupSetting(); err != nil {
+	if err := initialize.SetupSetting(configFile...); err != nil {
 		return err
 	}
 	// 初始校验规则

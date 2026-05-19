@@ -1,41 +1,71 @@
 package setting
 
-import "github.com/spf13/viper"
+import (
+	"os"
+	"path/filepath"
+	"strings"
 
-// Setting 结构体定义了一个配置结构体，用于管理应用程序的配置信息
+	"github.com/spf13/viper"
+)
+
+const configEnvKey = "APP_CONFIG"
+
+// Setting wraps viper for reading application configuration sections.
 type Setting struct {
-	// vp 是一个指向 viper.Viper 类型的指针，用于读取和解析配置文件
 	vp *viper.Viper
 }
 
-// NewSetting 初始化配置读取
-// 返回值：
+// NewSetting initializes configuration loading.
 //
-//	*Setting - 包含 viper 配置实例的结构体
-//	error    - 如果读取配置失败则返回错误
-func NewSetting() (*Setting, error) {
-	// 1. 创建一个新的 viper 实例（用于读取和管理配置）
+// Config file priority:
+//  1. first non-empty configFiles argument
+//  2. APP_CONFIG environment variable
+//  3. configs/config.yaml
+func NewSetting(configFiles ...string) (*Setting, error) {
 	vp := viper.New()
 
-	// 2. 设置配置文件名（不包含扩展名）
-	//    这里是 "config" → 会去找 config.yaml（或 config.json 等，取决于 SetConfigType）
-	vp.SetConfigName("config")
+	configFile := firstNonEmpty(configFiles...)
+	if configFile == "" {
+		configFile = strings.TrimSpace(os.Getenv(configEnvKey))
+	}
+	configureConfigFile(vp, configFile)
 
-	// 3. 添加配置文件搜索路径
-	//    这里是 configs/ 目录，也就是说程序会到 ./configs/ 下查找文件
-	//    可以多次调用 AddConfigPath 添加多个搜索路径
-	vp.AddConfigPath("configs")
-
-	// 4. 设置配置文件类型为 YAML
-	//    即使文件扩展名不是 .yaml，也会按 YAML 格式解析
-	vp.SetConfigType("yaml")
-
-	// 5. 尝试读取配置文件
-	//    如果文件不存在、路径错误、格式不正确等，都会返回错误
 	if err := vp.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
-	// 6. 将 viper 实例封装进自定义 Setting 结构体并返回
 	return &Setting{vp: vp}, nil
+}
+
+func configureConfigFile(vp *viper.Viper, configFile string) {
+	if configFile == "" {
+		vp.SetConfigName("config")
+		vp.AddConfigPath("configs")
+		vp.SetConfigType("yaml")
+		return
+	}
+
+	if filepath.IsAbs(configFile) || filepath.Dir(configFile) != "." {
+		vp.SetConfigFile(configFile)
+		return
+	}
+
+	ext := filepath.Ext(configFile)
+	vp.SetConfigName(strings.TrimSuffix(configFile, ext))
+	vp.AddConfigPath(".")
+	vp.AddConfigPath("configs")
+	if ext == "" {
+		vp.SetConfigType("yaml")
+		return
+	}
+	vp.SetConfigType(strings.TrimPrefix(ext, "."))
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if value = strings.TrimSpace(value); value != "" {
+			return value
+		}
+	}
+	return ""
 }

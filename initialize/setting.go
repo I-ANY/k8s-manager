@@ -9,9 +9,9 @@ import (
 // SetupSetting 初始化全局配置
 // 1. 创建 viper 实例（读取配置文件）
 // 2. 将配置文件中 "Server" 部分映射到 global.Setting
-func SetupSetting() error {
+func SetupSetting(configFile ...string) error {
 	// 1. 创建一个 Setting 对象（内部封装了 viper 配置读取）
-	s, err := setting.NewSetting()
+	s, err := setting.NewSetting(configFile...)
 	if err != nil {
 		// 如果读取配置文件失败，直接返回错误
 		return err

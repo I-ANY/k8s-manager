@@ -1,17 +1,6 @@
 # 🚀 k8soperation · Kubernetes 后台管理系统（后端）
-
-一个基于 **Go + Gin + Gorm + Zap** 的企业级 Kubernetes 后台管理系统后端，提供对 Kubernetes 各类资源的可视化运维能力，包括 Pod、Deployment、StatefulSet、Node、Ingress、Service、Job、CronJob、PVC、PV、Secret 等资源的完整生命周期管理。
-
-> 📦 **配套 AppConfig Operator（Kubebuilder 项目）请访问：**
->  👉 https://gitee.com/jay-kim/appconfig-operator
-
-系统支持多集群管理、事件聚合、滚动升级、镜像更新、扩缩容、Pod 日志流、节点驱逐/隔离、PVC 扩容等能力，是构建企业 K8s 管控平台的优秀后端基础设施。
-
 ------
 
-## ✨ 核心特性
-
-### 🧩 系统通用能力
 
 - 配置化加载（YAML / ENV）
 - JWT 鉴权 + 刷新机制
@@ -123,12 +112,7 @@ http://localhost:8080/swagger-standalone
 
 ------
 
-## 📄 部署文档（强烈推荐阅读）
-
-官方部署说明文档（包括 Docker 部署、Containerd 部署、进程部署、K8s 运行方式）：
-
-👉 **K8sOperation 后台系统部署文档**
-[https://gitee.com/jay-kim/k8s_operation/blob/master/docs/%F0%9F%93%84%20K8sOperation%20%E5%90%8E%E5%8F%B0%E7%B3%BB%E7%BB%9F%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md](https://gitee.com/jay-kim/k8s_operation/blob/master/docs/📄 K8sOperation 后台系统部署文档.md)
+## 部署文档（强烈推荐阅读）
 
 内容包括：
 
@@ -152,21 +136,3 @@ Operator → 管理 AppConfig CRD
 k8soperation → 提供 HTTP API/Web 后台
 
 两者解耦，便于独立演进。
-
-------
-
-## ⭐ Star / Watch / Fork
-
-如果本项目对你有帮助，非常欢迎：
-
-- ⭐ **Star**
-- 👀 **Watch**
-- 🍴 **Fork**
-
-你的支持是我持续完善的最大动力！
-
-------
-
-## 📜 License
-
-MIT License
