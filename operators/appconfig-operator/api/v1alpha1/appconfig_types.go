@@ -67,9 +67,9 @@ type AppConfigStatus struct {
 	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty"`
 
 	// 标准 Conditions，方便 kubectl / 控制器生态复用
-	// 使用 listType=map + listMapKey=type 来支持 patch 合并
+	// 使用 listType=map + listMapKey=types 来支持 patch 合并
 	// +listType=map
-	// +listMapKey=type
+	// +listMapKey=types
 	// +optional
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }

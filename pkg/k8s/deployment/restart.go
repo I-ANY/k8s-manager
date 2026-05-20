@@ -7,12 +7,12 @@ import (
 	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
 // RestartDeployment 给 Deployment 打注解触发滚动重启（等同于 kubectl rollout restart）
-func RestartDeployment(namespace, name string) error {
+func RestartDeployment(client *k8s.Client, namespace, name string) error {
 	// 官方约定的注解 key（kubectl rollout restart 使用的就是这个）
 	const restartedAtAnno = "kubectl.kubernetes.io/restartedAt"
 
@@ -45,12 +45,12 @@ func RestartDeployment(namespace, name string) error {
 
 	// 调用 Kubernetes API，使用 StrategicMergePatch 更新 Deployment
 	// - StrategicMergePatchType 能按容器 name 等字段智能合并，比 MergePatchType 更安全
-	_, err = global.KubeClient.AppsV1().
+	_, err = client.Interface.AppsV1().
 		Deployments(namespace).
 		Patch(ctx, name, types.StrategicMergePatchType, b, metav1.PatchOptions{})
 	if err != nil {
 		// 失败时记录日志并返回错误
-		global.Logger.Error("restart deployment (patch) failed",
+		client.Logger.Error("restart deployment (patch) failed",
 			zap.String("namespace", namespace),
 			zap.String("name", name),
 			zap.Error(err),
@@ -59,7 +59,7 @@ func RestartDeployment(namespace, name string) error {
 	}
 
 	// 成功时记录一条日志，说明 Deployment 已触发滚动重启
-	global.Logger.Info("restart deployment triggered",
+	client.Logger.Info("restart deployment triggered",
 		zap.String("namespace", namespace),
 		zap.String("name", name),
 		zap.String("restartedAt", ts),

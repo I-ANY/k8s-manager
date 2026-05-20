@@ -5,11 +5,11 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
-func DeleteService(ctx context.Context, name, namespace string) error {
+func DeleteService(client *k8s.Client, ctx context.Context, name, namespace string) error {
 	// 创建带超时的上下文，防止长时间阻塞
 	c, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
@@ -18,7 +18,7 @@ func DeleteService(ctx context.Context, name, namespace string) error {
 	opts := metav1.DeleteOptions{}
 
 	// 发起删除请求
-	if err := global.KubeClient.CoreV1().
+	if err := client.Interface.CoreV1().
 		Services(namespace).
 		Delete(c, name, opts); err != nil {
 
@@ -36,7 +36,7 @@ func DeleteService(ctx context.Context, name, namespace string) error {
 		30*time.Second, // 超时时间
 		true,           // 是否立即执行一次
 		func(ctx context.Context) (done bool, err error) {
-			_, err = global.KubeClient.CoreV1().
+			_, err = client.Interface.CoreV1().
 				Services(namespace).
 				Get(ctx, name, metav1.GetOptions{})
 			if apierrors.IsNotFound(err) {

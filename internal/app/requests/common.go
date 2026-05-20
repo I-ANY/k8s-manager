@@ -1,9 +1,10 @@
 package requests
 
 import (
+	"k8soperation/pkg/valid"
+
 	"github.com/gin-gonic/gin"
 	"github.com/thedevsaddam/govalidator"
-	"k8soperation/pkg/valid"
 )
 
 type CommonIdRequest struct {
@@ -100,7 +101,7 @@ type HttpHeader struct {
 
 // 健康检查探针（readiness/liveness 共用）
 type HealthCheckDetail struct {
-	Type                string       `json:"type"                  valid:"type"` // HTTP|TCP|Command
+	Type                string       `json:"types"                  valid:"types"` // HTTP|TCP|Command
 	Protocol            string       `json:"protocol"              valid:"protocol"`
 	Path                string       `json:"path"                  valid:"path"`
 	Port                int32        `json:"port"                  valid:"port"`
@@ -135,7 +136,7 @@ type KubeEventListRequest struct {
 	Namespace     string `json:"namespace,omitempty" valid:"namespace"` // 为空=全局
 	Kind          string `json:"kind,omitempty"      valid:"kind"`      // Deployment/StatefulSet/DaemonSet/Pod/Node...
 	Name          string `json:"name,omitempty"      valid:"name"`
-	Type          string `json:"type,omitempty"      valid:"type"` // Normal | Warning
+	Type          string `json:"types,omitempty"      valid:"types"` // Normal | Warning
 	Reason        string `json:"reason,omitempty"    valid:"reason"`
 	Limit         int64  `json:"limit,omitempty"     valid:"limit"` // 默认 50
 	ContinueToken string `json:"continue,omitempty"  valid:"continue"`
@@ -182,12 +183,12 @@ func ValidKubeEventListRequest(data interface{}, ctx *gin.Context) map[string][]
 		"limit":         []string{"required"}, // 与后端 clamp/文档一致
 		"since_seconds": []string{"required"},
 		// 如需限制：打开下一行；不想限制就删掉
-		// "type":          []string{"in:Normal,Warning"},
+		// "types":          []string{"in:Normal,Warning"},
 	}
 	msgs := govalidator.MapData{
 		"limit":         []string{"numeric_between: limit 取值范围 1~500"},
 		"since_seconds": []string{"numeric_min: since_seconds 不能为负数"},
-		// "type":          []string{"in: type 仅支持 Normal 或 Warning"},
+		// "types":          []string{"in: types 仅支持 Normal 或 Warning"},
 	}
 	return valid.ValidateOptions(data, rules, msgs)
 }

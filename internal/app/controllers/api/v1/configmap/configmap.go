@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/valid"
 )
@@ -30,6 +30,7 @@ func NewKubeConfigMapController() *KubeConfigMapController {
 // @Failure     500   {object} errorcode.Error   "内部错误"
 // @Router      /api/v1/k8s/configmap/create [post]
 func (ctl *KubeConfigMapController) Create(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	r := response.NewResponse(ctx)
 	req := requests.NewKubeConfigMapCreateRequest()
 
@@ -39,11 +40,11 @@ func (ctl *KubeConfigMapController) Create(ctx *gin.Context) {
 	}
 
 	// 调用 Service
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	cm, err := svc.KubeCreateConfigMap(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeCreateConfigMap error", zap.Error(err))
+		a.Logger.Error("service.KubeCreateConfigMap error", zap.Error(err))
 		return
 	}
 
@@ -71,6 +72,7 @@ func (ctl *KubeConfigMapController) Create(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/configmap/list [get]
 func (c *KubeConfigMapController) List(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	// 构造请求参数结构体
 	param := requests.NewKubeConfigMapListRequest()
 
@@ -83,11 +85,11 @@ func (c *KubeConfigMapController) List(ctx *gin.Context) {
 	}
 
 	// 调用 Service 层
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	configMaps, total, err := svc.KubeConfigMapList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeConfigMapList error", zap.Error(err))
+		a.Logger.Error("service.KubeConfigMapList error", zap.Error(err))
 		return
 	}
 
@@ -109,6 +111,7 @@ func (c *KubeConfigMapController) List(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error
 // @Router /api/v1/k8s/configmap/detail [get]
 func (c *KubeConfigMapController) Detail(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	// 构造请求参数
 	param := requests.NewKubeConfigMapDetailRequest()
 
@@ -121,11 +124,11 @@ func (c *KubeConfigMapController) Detail(ctx *gin.Context) {
 	}
 
 	// 调用业务逻辑层
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	cm, err := svc.KubeConfigMapDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeConfigMapDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeConfigMapDetail error", zap.Error(err))
 		return
 	}
 
@@ -147,6 +150,7 @@ func (c *KubeConfigMapController) Detail(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error   "内部错误"
 // @Router  /api/v1/k8s/configmap/delete [delete]
 func (c *KubeConfigMapController) Delete(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	r := response.NewResponse(ctx)
 	param := requests.NewKubeConfigMapDeleteRequest()
 
@@ -156,9 +160,9 @@ func (c *KubeConfigMapController) Delete(ctx *gin.Context) {
 	}
 
 	// 调用服务层
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeConfigMapDelete(ctx.Request.Context(), param); err != nil {
-		global.Logger.Error("service.KubeConfigMapDelete error", zap.Error(err))
+		a.Logger.Error("service.KubeConfigMapDelete error", zap.Error(err))
 		ctx.Error(err)
 		return
 	}
@@ -183,6 +187,7 @@ func (c *KubeConfigMapController) Delete(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/configmap/patch [patch]
 func (c *KubeConfigMapController) Patch(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewKubeConfigMapUpdateRequest()
 	r := response.NewResponse(ctx)
 
@@ -191,11 +196,11 @@ func (c *KubeConfigMapController) Patch(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	out, err := svc.KubeConfigMapPatch(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("KubeConfigMapPatch error", zap.Error(err))
+		a.Logger.Error("KubeConfigMapPatch error", zap.Error(err))
 		return
 	}
 
@@ -217,6 +222,7 @@ func (c *KubeConfigMapController) Patch(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/configmap/patch-json [post]
 func (c *KubeConfigMapController) PatchJSON(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewKubeConfigMapUpdateRequest()
 	r := response.NewResponse(ctx)
 
@@ -225,11 +231,11 @@ func (c *KubeConfigMapController) PatchJSON(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	out, err := svc.KubeConfigMapUpdate(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("KubeConfigMapPatchJSON error", zap.Error(err))
+		a.Logger.Error("KubeConfigMapPatchJSON error", zap.Error(err))
 		return
 	}
 

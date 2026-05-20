@@ -5,23 +5,23 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
 // DeleteDaemonSetService 删除与 DaemonSet 关联的 Service（如果存在）
 // 支持幂等：即使 Service 不存在也不会报错。
-func DeleteDaemonSetService(ctx context.Context, name, namespace string) error {
+func DeleteDaemonSetService(client *k8s.Client, ctx context.Context, name, namespace string) error {
 	// 尝试删除 Service
-	err := global.KubeClient.CoreV1().
+	err := client.Interface.CoreV1().
 		Services(namespace).
 		Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			global.Logger.Infof("service %s/%s not found, skip delete", namespace, name)
+			client.Logger.Infof("service %s/%s not found, skip delete", namespace, name)
 			return nil //  幂等：Service 已不存在
 		}
-		global.Logger.Errorf("delete daemonset service %s/%s failed: %v", namespace, name, err)
+		client.Logger.Errorf("delete daemonset service %s/%s failed: %v", namespace, name, err)
 		return err
 	}
 
@@ -32,9 +32,9 @@ func DeleteDaemonSetService(ctx context.Context, name, namespace string) error {
 		10*time.Second, // 最多等 10 秒
 		true,           // 是否立即执行第一次检查
 		func(ctx context.Context) (bool, error) {
-			_, err := global.KubeClient.CoreV1().Services(namespace).Get(ctx, name, metav1.GetOptions{})
+			_, err := client.Interface.CoreV1().Services(namespace).Get(ctx, name, metav1.GetOptions{})
 			if apierrors.IsNotFound(err) {
-				global.Logger.Infof("service %s/%s deleted successfully", namespace, name)
+				client.Logger.Infof("service %s/%s deleted successfully", namespace, name)
 				return true, nil //  删除完成
 			}
 			return false, err

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"k8soperation/global"
-	"k8soperation/internal/bootstrap"
-	"k8soperation/internal/server"
 	"os"
 	"time"
+
+	"k8soperation/internal/bootstrap"
+	"k8soperation/internal/server"
 
 	"github.com/spf13/cobra"
 )
@@ -38,19 +38,20 @@ func main() {
 }
 
 func run(configFile string) error {
-	if err := bootstrap.InitAll(configFile); err != nil {
+	app, err := bootstrap.InitAll(configFile)
+	if err != nil {
 		return err
 	}
-	defer bootstrap.FlushLoggers()
+	defer bootstrap.FlushLoggers(app)
 
-	srv := server.NewHTTPServer()
-	server.ListenAndServeAsync(srv)
+	srv := server.NewHTTPServer(app)
+	server.ListenAndServeAsync(app.Logger, srv)
 
-	timeout := time.Duration(global.ServerSetting.ShutdownTimeout) * time.Second
+	timeout := time.Duration(app.ServerSetting.ShutdownTimeout) * time.Second
 	if timeout <= 0 {
 		timeout = 5 * time.Second
 	}
 
-	server.GracefulShutdown(srv, timeout)
+	server.GracefulShutdown(app, srv, timeout)
 	return nil
 }

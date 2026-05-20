@@ -5,11 +5,11 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
-func DeleteSecret(ctx context.Context, name, namespace string) error {
+func DeleteSecret(client *k8s.Client, ctx context.Context, name, namespace string) error {
 	// 统一超时/取消，避免阻塞
 	c, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
@@ -19,7 +19,7 @@ func DeleteSecret(ctx context.Context, name, namespace string) error {
 	opts := metav1.DeleteOptions{PropagationPolicy: &fg}
 
 	// 发起删除
-	if err := global.KubeClient.CoreV1().
+	if err := client.Interface.CoreV1().
 		Secrets(namespace).
 		Delete(c, name, opts); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -35,7 +35,7 @@ func DeleteSecret(ctx context.Context, name, namespace string) error {
 		30*time.Second, // timeout（通常与 context 超时一致）
 		true,           // immediate：立即检查一次
 		func(ctx context.Context) (done bool, err error) {
-			_, err = global.KubeClient.CoreV1().
+			_, err = client.Interface.CoreV1().
 				Secrets(namespace).
 				Get(ctx, name, metav1.GetOptions{})
 			if apierrors.IsNotFound(err) {

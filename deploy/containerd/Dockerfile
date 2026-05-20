@@ -10,7 +10,7 @@ ENV GOPROXY=https://goproxy.cn,https://goproxy.io,direct
 # 仅复制依赖声明（命中层缓存）
 COPY go.mod go.sum ./
 # 保留 BuildKit 缓存：Go 依赖缓存到 /go/pkg/mod
-RUN --mount=type=cache,target=/go/pkg/mod \
+RUN --mount=types=cache,target=/go/pkg/mod \
     go mod download
 
 # 复制源码（以项目根为基准）
@@ -19,7 +19,7 @@ COPY . .
 # 编译（保留 Go 构建缓存）
 ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 ARG BIN_NAME=k8s_operation
-RUN --mount=type=cache,target=/root/.cache/go-deploy \
+RUN --mount=types=cache,target=/root/.cache/go-deploy \
     go deploy -trimpath -ldflags="-s -w" -o /out/${BIN_NAME} ./cmd/k8soperation
 
 # ---------- runtime ----------

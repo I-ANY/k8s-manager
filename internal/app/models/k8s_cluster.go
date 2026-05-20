@@ -2,9 +2,7 @@ package models
 
 import (
 	"fmt"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"k8soperation/global"
 	"k8soperation/internal/errorcode"
 )
 
@@ -26,16 +24,8 @@ func (k *K8sCluster) TableName() string { return "k8s_cluster" }
 func (k *K8sCluster) Create(db *gorm.DB) error {
 	tx := db.Create(k)
 	if tx.Error != nil {
-		global.Logger.Error("创建集群失败",
-			zap.String("cluster_name", k.ClusterName),
-			zap.Error(tx.Error),
-		)
 		return tx.Error
 	}
-	global.Logger.Info("创建集群成功",
-		zap.Uint32("cluster_id", k.ID),
-		zap.String("cluster_name", k.ClusterName),
-	)
 	return nil
 }
 
@@ -102,27 +92,13 @@ func (k *K8sCluster) Delete(db *gorm.DB) error {
 		Update("is_del", 1)
 
 	if tx.Error != nil {
-		// 记录日志
-		global.Logger.Error("软删除集群失败",
-			zap.Uint32("cluster_id", k.ID),
-			zap.Error(tx.Error),
-		)
-		// 返回 error，交给上层处理
 		return tx.Error
 	}
 
 	if tx.RowsAffected == 0 {
 		msg := fmt.Errorf("集群不存在或已删除: id=%d", k.ID)
-		global.Logger.Warn("软删除集群未生效",
-			zap.Uint32("cluster_id", k.ID),
-		)
 		return msg
 	}
-
-	// 成功时也可以打印一条 Info 日志
-	global.Logger.Info("软删除集群成功",
-		zap.Uint32("cluster_id", k.ID),
-	)
 
 	return nil
 }

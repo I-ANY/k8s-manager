@@ -8,10 +8,11 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8soperation/global"
+	k8sclient "k8soperation/pkg/k8s"
 )
 
 // EvictOnePod 驱逐单个 Pod（可被 /drain 和 /pod/evict 复用）
-func EvictOnePod(ctx context.Context, namespace, podName string, graceSeconds int64) error {
+func EvictOnePod(client *k8sclient.Client, ctx context.Context, namespace, podName string, graceSeconds int64) error {
 
 	var deleteOptions *metav1.DeleteOptions
 
@@ -39,7 +40,7 @@ func EvictOnePod(ctx context.Context, namespace, podName string, graceSeconds in
 
 		// Pod 不存在了：可认为驱逐成功，向上抛可控错误
 		if apierrors.IsNotFound(err) {
-			global.Logger.Warn("pod already gone when evict",
+			client.Log().Warn("pod already gone when evict",
 				zap.String("pod", podName),
 				zap.String("ns", namespace),
 			)
@@ -48,7 +49,7 @@ func EvictOnePod(ctx context.Context, namespace, podName string, graceSeconds in
 
 		// PDB 限制，客户端可选择重试
 		if apierrors.IsTooManyRequests(err) {
-			global.Logger.Warn("evict pod blocked by PDB",
+			client.Log().Warn("evict pod blocked by PDB",
 				zap.String("pod", podName),
 				zap.String("ns", namespace),
 				zap.Error(err),
@@ -57,7 +58,7 @@ func EvictOnePod(ctx context.Context, namespace, podName string, graceSeconds in
 		}
 
 		// 其他错误
-		global.Logger.Error("evict pod failed",
+		client.Log().Error("evict pod failed",
 			zap.String("pod", podName),
 			zap.String("ns", namespace),
 			zap.Error(err),

@@ -4,12 +4,12 @@ import (
 	"context"
 	appv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"k8soperation/pkg/k8s/dataselect"
 	"time"
 )
 
-func GetDeploymentList(ctx context.Context, name, namespace string, page, limit int) ([]appv1.Deployment, int, error) {
+func GetDeploymentList(client *k8s.Client, ctx context.Context, name, namespace string, page, limit int) ([]appv1.Deployment, int, error) {
 	// 超时上下文，避免 List 长时间阻塞
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -23,7 +23,7 @@ func GetDeploymentList(ctx context.Context, name, namespace string, page, limit 
 	}
 
 	// 拉取列表
-	list, err := global.KubeClient.AppsV1().
+	list, err := client.Interface.AppsV1().
 		Deployments(namespace).
 		List(ctx, metav1.ListOptions{})
 	if err != nil {

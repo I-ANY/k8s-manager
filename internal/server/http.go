@@ -1,48 +1,46 @@
 package server
 
 import (
-	"go.uber.org/zap"
-	"k8soperation/global"
-	"k8soperation/initialize"
 	"net/http"
 	"time"
+
+	"go.uber.org/zap"
+	"k8soperation/initialize"
+	"k8soperation/pkg/app"
+	"k8soperation/pkg/logger"
 )
 
-func NewHTTPServer() *http.Server {
-	// 初始化引擎
-	engine := initialize.NewEngine()
+func NewHTTPServer(a *app.App) *http.Server {
+	engine := initialize.NewEngine(a)
 
-	// 兜底超时
-	shutdownTimeout := time.Duration(global.ServerSetting.ShutdownTimeout) * time.Second
-
+	shutdownTimeout := time.Duration(a.ServerSetting.ShutdownTimeout) * time.Second
 	if shutdownTimeout <= 0 {
 		shutdownTimeout = 5 * time.Second
 	}
 
 	srv := &http.Server{
-		Addr:              ":" + global.ServerSetting.Port,
+		Addr:              ":" + a.ServerSetting.Port,
 		Handler:           engine,
 		ReadHeaderTimeout: 5 * time.Second,
-		ReadTimeout:       global.ServerSetting.ReadTimeout * time.Second,
-		WriteTimeout:      global.ServerSetting.WriteTimeout * time.Second,
-		IdleTimeout:       global.ServerSetting.IdleTimeout * time.Second,
+		ReadTimeout:       a.ServerSetting.ReadTimeout * time.Second,
+		WriteTimeout:      a.ServerSetting.WriteTimeout * time.Second,
+		IdleTimeout:       a.ServerSetting.IdleTimeout * time.Second,
 		MaxHeaderBytes:    1 << 20,
-		ErrorLog:          global.Logger.StdLogger(),
+		ErrorLog:          a.Logger.StdLogger(),
 	}
 
 	srv.RegisterOnShutdown(func() {
-		global.Logger.Info("http k8soperation shutdown")
-		if global.SQLDB != nil {
-			_ = global.SQLDB.Close()
+		a.Logger.Info("http k8soperation shutdown")
+		if a.SQLDB != nil {
+			_ = a.SQLDB.Close()
 		}
 	})
 
 	return srv
 }
 
-// 记录服务器启动日志
-func logServerStart(srv *http.Server) {
-	global.Logger.Info("http k8soperation starting",
+func logServerStart(l *logger.Logger, srv *http.Server, runMode string) {
+	l.Info("http k8soperation starting",
 		zap.String("addr", srv.Addr),
-		zap.String("mode", global.ServerSetting.RunMode))
+		zap.String("mode", runMode))
 }

@@ -8,14 +8,14 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
-func RollbackDaemonSet(ctx context.Context, name, namespace, revisionName string) (*appv1.DaemonSet, error) {
+func RollbackDaemonSet(client *k8s.Client, ctx context.Context, name, namespace, revisionName string) (*appv1.DaemonSet, error) {
 
 	// 检查 DS 是否存在
-	if _, err := global.KubeClient.AppsV1().DaemonSets(namespace).Get(ctx, name, metav1.GetOptions{}); err != nil {
+	if _, err := client.Interface.AppsV1().DaemonSets(namespace).Get(ctx, name, metav1.GetOptions{}); err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil, fmt.Errorf("daemonset %s/%s not found: %w", namespace, name, err)
 		}
@@ -26,7 +26,7 @@ func RollbackDaemonSet(ctx context.Context, name, namespace, revisionName string
 	}
 
 	// 获取 DS 历史版本（ControllerRevision）
-	revs, err := GetDaemonSetControllerRevisions(namespace, name)
+	revs, err := GetDaemonSetControllerRevisions(client, namespace, name)
 	if err != nil {
 		return nil, fmt.Errorf("list daemonset history failed: %w", err)
 	}
@@ -53,7 +53,7 @@ func RollbackDaemonSet(ctx context.Context, name, namespace, revisionName string
 		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 
-		cur, getErr := global.KubeClient.AppsV1().DaemonSets(namespace).Get(cctx, name, metav1.GetOptions{})
+		cur, getErr := client.Interface.AppsV1().DaemonSets(namespace).Get(cctx, name, metav1.GetOptions{})
 		if getErr != nil {
 			return fmt.Errorf("get daemonset %s/%s failed: %w", namespace, name, getErr)
 		}
@@ -69,7 +69,7 @@ func RollbackDaemonSet(ctx context.Context, name, namespace, revisionName string
 		cur.Annotations["rollback.at"] = time.Now().Format(time.RFC3339)
 
 		var updateErr error
-		updated, updateErr = global.KubeClient.AppsV1().DaemonSets(namespace).Update(cctx, cur, metav1.UpdateOptions{})
+		updated, updateErr = client.Interface.AppsV1().DaemonSets(namespace).Update(cctx, cur, metav1.UpdateOptions{})
 		if updateErr != nil {
 			return fmt.Errorf("update daemonset %s/%s failed: %w", namespace, name, updateErr)
 		}
@@ -81,11 +81,11 @@ func RollbackDaemonSet(ctx context.Context, name, namespace, revisionName string
 	return updated, nil
 }
 
-func GetDaemonSetControllerRevisions(namespace, name string) ([]appv1.ControllerRevision, error) {
+func GetDaemonSetControllerRevisions(client *k8s.Client, namespace, name string) ([]appv1.ControllerRevision, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	list, err := global.KubeClient.AppsV1().
+	list, err := client.Interface.AppsV1().
 		ControllerRevisions(namespace).
 		List(ctx, metav1.ListOptions{})
 	if err != nil {

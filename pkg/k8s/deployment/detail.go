@@ -7,22 +7,22 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
-func GetDeploymentDetail(name, namespace string) (*appv1.Deployment, error) {
+func GetDeploymentDetail(client *k8s.Client, name, namespace string) (*appv1.Deployment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	dp, err := global.KubeClient.AppsV1().
+	dp, err := client.Interface.AppsV1().
 		Deployments(namespace).
 		Get(ctx, name, metav1.GetOptions{})
 
 	if err != nil {
 		// 仅当有错误时再细分类型
 		if apierrors.IsNotFound(err) { // 别名：apierrors 来自 k8s.io/apimachinery/pkg/api/errors
-			global.Logger.Error("deployment not found",
+			client.Logger.Error("deployment not found",
 				zap.String("namespace", namespace),
 				zap.String("name", name),
 			)
@@ -30,7 +30,7 @@ func GetDeploymentDetail(name, namespace string) (*appv1.Deployment, error) {
 		}
 
 		// 其它错误，直接返回并记录
-		global.Logger.Error("get deployment failed",
+		client.Logger.Error("get deployment failed",
 			zap.String("namespace", namespace),
 			zap.String("name", name),
 			zap.Error(err),

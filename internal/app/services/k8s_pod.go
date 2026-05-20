@@ -9,7 +9,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/pkg/k8s/common"
 	pod2 "k8soperation/pkg/k8s/pod"
@@ -19,11 +18,11 @@ import (
 func (s *Services) KubePodList(ctx context.Context, param *requests.KubePodListRequest) ([]corev1.Pod, error) {
 	pods, err := pod2.GetPodList(ctx, param.Name, param.Namespace, param.Page, param.Limit)
 	if err != nil {
-		global.Logger.Errorf("GetPodList error: %v", err)
+		s.App().Logger.Errorf("GetPodList error: %v", err)
 		return nil, err
 	}
 
-	global.Logger.Infof("GetPodList success")
+	s.App().Logger.Infof("GetPodList success")
 	return pods, nil
 }
 
@@ -52,11 +51,11 @@ func (s *Services) KubePodDelete(param *requests.KubePodDeleteRequest) error {
 	}
 
 	// 3) 调 K8s API
-	err := global.KubeClient.CoreV1().
+	err := s.App().KubeClient.CoreV1().
 		Pods(param.Namespace).
 		Delete(context.TODO(), param.Name, opts)
 	if err != nil {
-		global.Logger.Errorf("删除 Pod 失败 ns=%s name=%s : %v", param.Namespace, param.Name, err)
+		s.App().Logger.Errorf("删除 Pod 失败 ns=%s name=%s : %v", param.Namespace, param.Name, err)
 		return err
 	}
 
@@ -65,17 +64,17 @@ func (s *Services) KubePodDelete(param *requests.KubePodDeleteRequest) error {
 	if param.GraceSeconds != nil {
 		g = *param.GraceSeconds
 	}
-	global.Logger.Infof("删除 Pod 已提交 ns=%s name=%s force=%v grace=%d", param.Namespace, param.Name, param.Force, g)
+	s.App().Logger.Infof("删除 Pod 已提交 ns=%s name=%s force=%v grace=%d", param.Namespace, param.Name, param.Force, g)
 	return nil
 }
 
 // KubePodUpdate PodUpdate 更新Pod
 func (s *Services) KubePodUpdate(param *requests.KubePodUpdateRequest) error {
 	if err := pod2.UpdatePod(param.Namespace, param.Name, param.Content); err != nil {
-		global.Logger.Errorf("UpdatePod error: %v", err)
+		s.App().Logger.Errorf("UpdatePod error: %v", err)
 		return err
 	}
-	global.Logger.Infof("UpdatePod success")
+	s.App().Logger.Infof("UpdatePod success")
 	return nil
 }
 
@@ -100,7 +99,7 @@ func (s *Services) PatchPodImage(param *requests.PatchPodImageRequest) error {
 
 	// 调用 Kubernetes API 执行 Pod 更新操作
 	// 使用 Strategic Merge Patch 类型进行部分更新
-	_, err := global.KubeClient.CoreV1().
+	_, err := s.App().KubeClient.CoreV1().
 		Pods(param.Namespace). // 指定命名空间
 		Patch(context.TODO(),  // 上下文
 			param.Name,                    // Pod 名称
@@ -111,12 +110,12 @@ func (s *Services) PatchPodImage(param *requests.PatchPodImageRequest) error {
 	// 检查更新操作是否出错
 	if err != nil {
 		// 记录错误日志并返回错误
-		global.Logger.Errorf("PatchPodImage error: %v", err)
+		s.App().Logger.Errorf("PatchPodImage error: %v", err)
 		return err
 	}
 
 	// 记录成功日志
-	global.Logger.Infof("PatchPodImage success: ns=%s kube_pod=%s container=%s image=%s",
+	s.App().Logger.Infof("PatchPodImage success: ns=%s kube_pod=%s container=%s image=%s",
 		param.Namespace, param.Name, param.Container, param.NewImage)
 	// 返回 nil 表示操作成功
 	return nil
@@ -126,10 +125,10 @@ func (s *Services) PatchPodImage(param *requests.PatchPodImageRequest) error {
 func (s *Services) KubePodDetail(param *requests.KubePodDetailRequest) (*corev1.Pod, error) {
 	p, err := pod2.GetPodDetail(param.Namespace, param.Name)
 	if err != nil {
-		global.Logger.Errorf("GetPodDetail error: %v", err)
+		s.App().Logger.Errorf("GetPodDetail error: %v", err)
 		return nil, err
 	}
-	global.Logger.Infof("GetPodDetail success: %s/%s", param.Namespace, param.Name)
+	s.App().Logger.Infof("GetPodDetail success: %s/%s", param.Namespace, param.Name)
 	return p, nil
 }
 
@@ -138,10 +137,10 @@ func (s *Services) GetContainerNames(param *requests.KubePodDetailRequest) ([]st
 	// 先获取Pod详情
 	p, err := pod2.GetPodDetail(param.Namespace, param.Name)
 	if err != nil {
-		global.Logger.Errorf("GetPodDetail error: %v", err)
+		s.App().Logger.Errorf("GetPodDetail error: %v", err)
 		return nil, err
 	}
-	global.Logger.Infof("GetPodDetail success: %s/%s", param.Namespace, param.Name)
+	s.App().Logger.Infof("GetPodDetail success: %s/%s", param.Namespace, param.Name)
 
 	// 获取容器名称列表
 	containersNames := common.GetContainerNames(&p.Spec)
@@ -153,10 +152,10 @@ func (s *Services) GetInitContainerNames(param *requests.KubeCommonRequest) ([]s
 	// 先获取Pod详情
 	p, err := pod2.GetPodDetail(param.Namespace, param.Name)
 	if err != nil {
-		global.Logger.Errorf("GetPodDetail error: %v", err)
+		s.App().Logger.Errorf("GetPodDetail error: %v", err)
 		return nil, err
 	}
-	global.Logger.Infof("GetPodDetail success: %s/%s", param.Namespace, param.Name)
+	s.App().Logger.Infof("GetPodDetail success: %s/%s", param.Namespace, param.Name)
 
 	// 获取Init容器
 	initContainerNames := common.GetInitContainerNames(&p.Spec)
@@ -168,10 +167,10 @@ func (s *Services) GetContainerImages(param *requests.KubePodDetailRequest) ([]s
 	// 先获取Pod详情
 	p, err := pod2.GetPodDetail(param.Namespace, param.Name)
 	if err != nil {
-		global.Logger.Errorf("GetPodDetail error: %v", err)
+		s.App().Logger.Errorf("GetPodDetail error: %v", err)
 		return nil, err
 	}
-	global.Logger.Infof("GetPodDetail success: %s/%s", param.Namespace, param.Name)
+	s.App().Logger.Infof("GetPodDetail success: %s/%s", param.Namespace, param.Name)
 
 	// 获取容器镜像名称列表
 	containerImages := common.GetContainerImages(&p.Spec)
@@ -183,10 +182,10 @@ func (s *Services) GetInitContainerImages(param *requests.KubeCommonRequest) ([]
 	// 先获取Pod详情
 	p, err := pod2.GetPodDetail(param.Namespace, param.Name)
 	if err != nil {
-		global.Logger.Errorf("GetPodDetail error: %v", err)
+		s.App().Logger.Errorf("GetPodDetail error: %v", err)
 		return nil, err
 	}
-	global.Logger.Infof("GetPodDetail success: %s/%s", param.Namespace, param.Name)
+	s.App().Logger.Infof("GetPodDetail success: %s/%s", param.Namespace, param.Name)
 
 	// 获取Init容器镜像名称列表
 	initContainerImages := common.GetInitContainerImages(&p.Spec)
@@ -198,14 +197,14 @@ func (s *Services) KubePodAllContainerNames(param *requests.KubePodDetailRequest
 	// 1. 获取 Pod 对象
 	p, err := pod2.GetPodDetail(param.Namespace, param.Name)
 	if err != nil {
-		global.Logger.Errorf("GetPodDetail error: %v", err)
+		s.App().Logger.Errorf("GetPodDetail error: %v", err)
 		return nil, err
 	}
 
 	// 2. 从 PodSpec 中提取容器名称
 	names := common.GetAllContainerNames(&p.Spec)
 
-	global.Logger.Infof("GetAllContainerNames success: %s/%s -> %v", param.Namespace, param.Name, names)
+	s.App().Logger.Infof("GetAllContainerNames success: %s/%s -> %v", param.Namespace, param.Name, names)
 	return names, nil
 }
 
@@ -214,14 +213,14 @@ func (s *Services) KubePodAllContainerImages(param *requests.KubePodDetailReques
 	// 1. 获取 Pod 对象
 	p, err := pod2.GetPodDetail(param.Namespace, param.Name)
 	if err != nil {
-		global.Logger.Errorf("GetPodDetail error: %v", err)
+		s.App().Logger.Errorf("GetPodDetail error: %v", err)
 		return nil, err
 	}
 
 	// 2. 从 PodSpec 中提取容器镜像
 	images := common.GetAllContainerImages(&p.Spec)
 
-	global.Logger.Infof("GetAllContainerImages success: %s/%s -> %v", param.Namespace, param.Name, images)
+	s.App().Logger.Infof("GetAllContainerImages success: %s/%s -> %v", param.Namespace, param.Name, images)
 	return images, nil
 }
 
@@ -230,28 +229,28 @@ func (s *Services) KubePodLog(ctx context.Context, name, namespace, container st
 	// 设置tail行数，如果未指定则使用默认值
 	t := tail
 	if t <= 0 {
-		t = global.PodLogSetting.TailDefault
+		t = s.App().PodLogSetting.TailDefault
 	}
 	// 确保tail行数不超过最大限制
-	if max := global.PodLogSetting.TailMax; max > 0 && t > max {
+	if max := s.App().PodLogSetting.TailMax; max > 0 && t > max {
 		t = max
 	}
 
 	// 创建Pod日志选项配置
 	opts := &corev1.PodLogOptions{
-		Container:  container,                       // 指定容器名称
-		TailLines:  &t,                              // 设置从日志末尾开始的行数
-		Timestamps: global.PodLogSetting.Timestamps, // 是否显示时间戳
-		Previous:   global.PodLogSetting.Previous,   // 是否显示 previous 容器的日志
-		Follow:     false,                           // 不启用流式日志模式
+		Container:  container,                        // 指定容器名称
+		TailLines:  &t,                               // 设置从日志末尾开始的行数
+		Timestamps: s.App().PodLogSetting.Timestamps, // 是否显示时间戳
+		Previous:   s.App().PodLogSetting.Previous,   // 是否显示 previous 容器的日志
+		Follow:     false,                            // 不启用流式日志模式
 	}
 	// 如果设置了字节限制，则添加到选项中（仅在一次性模式下生效）
-	if lb := global.PodLogSetting.LimitBytes; lb > 0 {
+	if lb := s.App().PodLogSetting.LimitBytes; lb > 0 {
 		opts.LimitBytes = &lb // 仅一次性模式生效
 	}
 
 	// 获取Pod日志流
-	rc, err := global.KubeClient.CoreV1().Pods(namespace).GetLogs(name, opts).Stream(ctx)
+	rc, err := s.App().KubeClient.CoreV1().Pods(namespace).GetLogs(name, opts).Stream(ctx)
 	if err != nil {
 		return "", fmt.Errorf("open log stream: %w", err)
 	}
@@ -263,7 +262,7 @@ func (s *Services) KubePodLog(ctx context.Context, name, namespace, container st
 		return "", fmt.Errorf("read log: %w", err)
 	}
 	// 记录成功获取日志的信息，包括日志长度
-	global.Logger.Infof("get kube_pod log success, len=%d", buf.Len())
+	s.App().Logger.Infof("get kube_pod log success, len=%d", buf.Len())
 	return buf.String(), nil
 }
 
@@ -276,23 +275,23 @@ func (s *Services) KubePodLogStream(ctx context.Context, name, namespace, contai
 	}
 	// 如果tail为0，则使用默认的tail行数
 	if t == 0 {
-		t = global.PodLogSetting.TailDefault
+		t = s.App().PodLogSetting.TailDefault
 	}
 	// 检查并确保tail行数不超过最大限制
-	if max := global.PodLogSetting.TailMax; max > 0 && t > max {
+	if max := s.App().PodLogSetting.TailMax; max > 0 && t > max {
 		t = max
 	}
 
 	// 创建Pod日志选项
 	opts := &corev1.PodLogOptions{
-		Container:  container,                            // 指定容器名称
-		TailLines:  &t,                                   // 设置要获取的日志行数
-		Timestamps: global.PodLogSetting.Timestamps,      // 是否显示时间戳
-		Previous:   global.PodLogSetting.Previous,        // 是否获取之前容器的日志
-		Follow:     global.PodLogSetting.EnableStreaming, // 关键
+		Container:  container,                             // 指定容器名称
+		TailLines:  &t,                                    // 设置要获取的日志行数
+		Timestamps: s.App().PodLogSetting.Timestamps,      // 是否显示时间戳
+		Previous:   s.App().PodLogSetting.Previous,        // 是否获取之前容器的日志
+		Follow:     s.App().PodLogSetting.EnableStreaming, // 关键
 		// Follow 模式不要设置 LimitBytes，否则会被截断
 	}
-	return global.KubeClient.CoreV1().Pods(namespace).GetLogs(name, opts).Stream(ctx)
+	return s.App().KubeClient.CoreV1().Pods(namespace).GetLogs(name, opts).Stream(ctx)
 }
 
 // GetPodLog 用于获取指定Pod的日志内容
@@ -314,7 +313,7 @@ func (s *Services) GetPodLog(name, namespace, container string, tailLine int64) 
 		TailLines: &tailLine,
 	}
 	// 创建获取Pod日志的请求
-	req := global.KubeClient.CoreV1().Pods(namespace).GetLogs(name, options)
+	req := s.App().KubeClient.CoreV1().Pods(namespace).GetLogs(name, options)
 	// 通过流式方式获取Pod日志
 	podLog, err := req.Stream(context.TODO())
 	if err != nil {

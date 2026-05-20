@@ -155,7 +155,7 @@ func NewDataSelector(cells []DataCell, name string, limit, page int) *DataSelect
 	}
 }
 
-func NewPodLogOptions(container string, tail int64, follow bool) *corev1.PodLogOptions {
+func NewPodLogOptions(client *k8s.Client, container string, tail int64, follow bool) *corev1.PodLogOptions {
 	// 1) 归一化 tail
 	if tail < 0 { // 检查 tail 是否为负数
 		tail = 0 // 如果 tail 值为负数，则重置为 0
@@ -168,23 +168,23 @@ func NewPodLogOptions(container string, tail int64, follow bool) *corev1.PodLogO
 	// 可选：为 follow 且未指定 tail 的情况，给一个较小的默认，避免一次性回放太多
 	// 判断是否需要设置默认的tail行数
 	// 条件：开启了follow模式、未手动指定tail行数、且配置中设置了默认tail行数
-	if follow && useTail == 0 && global.PodLogSetting.TailDefault > 0 {
+	if follow && useTail == 0 && client.PodLogSetting.TailDefault > 0 {
 		// 设置tail行数为配置中的默认值
-		useTail = global.PodLogSetting.TailDefault
+		useTail = client.PodLogSetting.TailDefault
 	}
 
 	// 上限
 	// 如果全局Pod日志设置中的TailMax大于0，并且当前使用的useTail值大于TailMax
 	// 则将 useTail的值限制为TailMax的最大值，确保不超过系统允许的最大日志行数
-	if tailMax := global.PodLogSetting.TailMax; tailMax > 0 && useTail > tailMax {
+	if tailMax := client.PodLogSetting.TailMax; tailMax > 0 && useTail > tailMax {
 		useTail = tailMax
 	}
 
 	// 2) 组装选项
 	// 创建Pod日志选项的结构体指针，用于配置获取Pod日志的参数
 	opts := &corev1.PodLogOptions{
-		Timestamps: global.PodLogSetting.Timestamps, // 是否显示时间戳
-		Previous:   global.PodLogSetting.Previous,   // 是否获取前一个容器的日志
+		Timestamps: client.PodLogSetting.Timestamps, // 是否显示时间戳
+		Previous:   client.PodLogSetting.Previous,   // 是否获取前一个容器的日志
 		Follow:     follow,                          // 是否实时跟踪日志
 	}
 
@@ -202,7 +202,7 @@ func NewPodLogOptions(container string, tail int64, follow bool) *corev1.PodLogO
 
 	// Follow 时不建议 LimitBytes，避免截断；一次性模式可按需限制返回体大小
 	if !follow {
-		if lb := global.PodLogSetting.LimitBytes; lb > 0 {
+		if lb := client.PodLogSetting.LimitBytes; lb > 0 {
 			opts.LimitBytes = &lb
 		}
 	}

@@ -8,11 +8,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 )
 
 // DeleteJob 删除指定 Job（带前台级联 + 轮询等待删除完成）
-func DeleteJob(ctx context.Context, name, namespace string) error {
+func DeleteJob(client *k8s.Client, ctx context.Context, name, namespace string) error {
 	// 统一超时 / 取消控制
 	c, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
@@ -22,7 +22,7 @@ func DeleteJob(ctx context.Context, name, namespace string) error {
 	opts := metav1.DeleteOptions{PropagationPolicy: &fg}
 
 	// 发起删除
-	if err := global.KubeClient.BatchV1().
+	if err := client.Interface.BatchV1().
 		Jobs(namespace).
 		Delete(c, name, opts); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -38,7 +38,7 @@ func DeleteJob(ctx context.Context, name, namespace string) error {
 		30*time.Second, // 超时时间
 		true,           // immediate：立即执行一次
 		func(ctx context.Context) (done bool, err error) {
-			_, err = global.KubeClient.BatchV1().
+			_, err = client.Interface.BatchV1().
 				Jobs(namespace).
 				Get(ctx, name, metav1.GetOptions{})
 			if apierrors.IsNotFound(err) {

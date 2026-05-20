@@ -4,9 +4,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 
 	"k8soperation/internal/app/requests"
 )
@@ -22,17 +23,17 @@ const (
 
 // BuildSecretFromReq 根据请求构建 Secret 对象（首选 StringData）
 func BuildSecretFromReq(req *requests.KubeSecretCreateRequest) (*corev1.Secret, error) {
-	// 1) 规范化类型（优先用 mode，兼容旧版 type）
+	// 1) 规范化类型（优先用 mode，兼容旧版 types）
 	typ, err := normalizeSecretType(req.Mode, req.Type)
 	if err != nil {
 		return nil, err
 	}
-	// 冲突检测（可选）：如果 mode+type 同时提供但不匹配，直接报错
+	// 冲突检测（可选）：如果 mode+types 同时提供但不匹配，直接报错
 	if req.Mode != "" && req.Type != "" {
 		stdTypByMode, _ := normalizeSecretType(req.Mode, "")
 		stdTypByType, _ := normalizeSecretType("", req.Type)
 		if stdTypByMode != stdTypByType {
-			return nil, fmt.Errorf("mode %q conflicts with type %q", req.Mode, req.Type)
+			return nil, fmt.Errorf("mode %q conflicts with types %q", req.Mode, req.Type)
 		}
 	}
 
@@ -219,7 +220,7 @@ func BuildSecretFromReq(req *requests.KubeSecretCreateRequest) (*corev1.Secret, 
 	return sec, nil
 }
 
-// normalizeSecretType 将 mode / type 规范化为 corev1.SecretType
+// normalizeSecretType 将 mode / types 规范化为 corev1.SecretType
 func normalizeSecretType(mode, typ string) (corev1.SecretType, error) {
 	if mode != "" {
 		switch strings.ToLower(strings.TrimSpace(mode)) {
@@ -237,7 +238,7 @@ func normalizeSecretType(mode, typ string) (corev1.SecretType, error) {
 			return "", fmt.Errorf("unsupported mode: %q", mode)
 		}
 	}
-	// 兼容仅传 type
+	// 兼容仅传 types
 	switch strings.ToLower(strings.TrimSpace(typ)) {
 	case "", "opaque":
 		return corev1.SecretTypeOpaque, nil
@@ -251,7 +252,7 @@ func normalizeSecretType(mode, typ string) (corev1.SecretType, error) {
 		return corev1.SecretTypeSSHAuth, nil
 	default:
 		// 若你希望支持自定义类型，可放开：return corev1.SecretType(typ), nil
-		return "", fmt.Errorf("unsupported secret type: %q", typ)
+		return "", fmt.Errorf("unsupported secret types: %q", typ)
 	}
 }
 

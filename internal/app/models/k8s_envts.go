@@ -9,7 +9,7 @@ type EventItem struct {
 	Namespace       string    `json:"namespace"`                  // 命名空间，资源所在的命名空间
 	Kind            string    `json:"kind"`                       // 资源类型，如Pod、Service等
 	Name            string    `json:"name"`                       // 资源名称
-	Type            string    `json:"type"`                       // 事件类型，如Normal、Warning等
+	Type            string    `json:"types"`                      // 事件类型，如Normal、Warning等
 	Reason          string    `json:"reason"`                     // 事件发生的原因
 	Message         string    `json:"message"`                    // 事件的详细描述信息
 	Count           int32     `json:"count"`                      // 事件发生的次数

@@ -1,10 +1,11 @@
 package requests
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/thedevsaddam/govalidator"
 	"k8soperation/pkg/valid"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/thedevsaddam/govalidator"
 )
 
 //
@@ -56,9 +57,9 @@ type KubeSecretCreateRequest struct {
 	Namespace string `json:"namespace" valid:"namespace"`
 	Name      string `json:"name"      valid:"name"`
 
-	// 推荐传 mode（更语义化），兼容 type（原生 k8s 类型字符串）
+	// 推荐传 mode（更语义化），兼容 types（原生 k8s 类型字符串）
 	Mode string `json:"mode" valid:"-"`
-	Type string `json:"type" valid:"-"`
+	Type string `json:"types" valid:"-"`
 
 	// 通用键值（Opaque 或直接键值对）
 	Data map[string]string `json:"data" swaggertype:"string" valid:"-"`
@@ -87,10 +88,10 @@ func ValidKubeSecretCreateRequest(data interface{}, c *gin.Context) map[string][
 		errs["name"] = append(errs["name"], "name 不能为空")
 	}
 
-	// 2) 规范化：允许前端传 mode 或 type，最终归一到 canonicalType/canonicalMode
+	// 2) 规范化：允许前端传 mode 或 types，最终归一到 canonicalType/canonicalMode
 	canonicalType, canonicalMode := normalizeTypeAndMode(req.Type, req.Mode)
 	if canonicalType == "" && canonicalMode == "" {
-		errs["type"] = append(errs["type"], "必须指定 mode 或 type")
+		errs["types"] = append(errs["types"], "必须指定 mode 或 types")
 		return errs
 	}
 
@@ -150,12 +151,12 @@ func ValidKubeSecretCreateRequest(data interface{}, c *gin.Context) map[string][
 
 // —— 辅助函数 ——
 
-// 规范化 mode/type，允许两种来源，最终回到统一值
+// 规范化 mode/types，允许两种来源，最终回到统一值
 func normalizeTypeAndMode(typ, mode string) (canonicalType, canonicalMode string) {
 	t := strings.TrimSpace(strings.ToLower(typ))
 	m := strings.TrimSpace(strings.ToLower(mode))
 
-	// 先看 type
+	// 先看 types
 	switch t {
 	case strings.ToLower(SecretTypeOpaque):
 		return SecretTypeOpaque, SecretModeOpaque
@@ -217,7 +218,7 @@ type KubeSecretListRequest struct {
 	KubeCommonRequest
 	Page  int    `json:"page" form:"page" valid:"page"`
 	Limit int    `json:"limit" form:"limit" valid:"limit"`
-	Type  string `json:"type" form:"type" valid:"-"` // 可选过滤类型
+	Type  string `json:"types" form:"types" valid:"-"` // 可选过滤类型
 }
 
 func ValidKubeSecretListRequest(data interface{}, _ *gin.Context) map[string][]string {
@@ -365,7 +366,7 @@ func NewKubeSecretNamesRequest() *KubeSecretNamesRequest { return &KubeSecretNam
 
 type KubeSecretNamesRequest struct {
 	Namespace string `json:"namespace" form:"namespace" valid:"namespace"`
-	Type      string `json:"type" form:"type" valid:"-"`
+	Type      string `json:"types" form:"types" valid:"-"`
 }
 
 func ValidKubeSecretNamesRequest(data interface{}, _ *gin.Context) map[string][]string {

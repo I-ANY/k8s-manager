@@ -1,12 +1,12 @@
-// initialize/logger.go
 package initialize
 
 import (
 	"fmt"
-	"k8soperation/global"
-	logger2 "k8soperation/pkg/logger"
 	"os"
 	"path/filepath"
+
+	"k8soperation/pkg/app"
+	logger2 "k8soperation/pkg/logger"
 )
 
 func ensureDir(filePath string) error {
@@ -27,26 +27,22 @@ func ensureDir(filePath string) error {
 	return nil
 }
 
-// SetupLogger 初始化系统日志与业务日志
-func SetupLogger() error {
-	if global.AppSetting == nil {
+func SetupLogger(a *app.App) error {
+	if a.AppSetting == nil {
 		return fmt.Errorf("AppSetting is nil")
 	}
 
-	// —— 系统日志目录
-	if err := ensureDir(global.AppSetting.LogFileName); err != nil {
+	if err := ensureDir(a.AppSetting.LogFileName); err != nil {
 		return err
 	}
-	// —— 业务日志目录（给默认值）
-	if global.AppSetting.BusinessLogFileName == "" {
-		global.AppSetting.BusinessLogFileName = "storage/logs/biz.log"
+	if a.AppSetting.BusinessLogFileName == "" {
+		a.AppSetting.BusinessLogFileName = "logs/app.log"
 	}
-	if err := ensureDir(global.AppSetting.BusinessLogFileName); err != nil {
+	if err := ensureDir(a.AppSetting.BusinessLogFileName); err != nil {
 		return err
 	}
 
-	// —— 日志级别与选项（统一只算/声明一次）
-	lvl := logger2.WithLevel(global.AppSetting.LogLevel)
+	lvl := logger2.WithLevel(a.AppSetting.LogLevel)
 	sysOpts := []logger2.Option{
 		logger2.AddCaller(),
 		logger2.AddCallerSkip(1),
@@ -57,33 +53,28 @@ func SetupLogger() error {
 		logger2.AddCallerSkip(1),
 	}
 
-	// —— 初始化系统日志（stdout + 文件轮转）
-	global.Logger = logger2.NewLogger(
+	a.Logger = logger2.NewLogger(
 		lvl,
 		logger2.RotateOptions{
-			FileName:   global.AppSetting.LogFileName,
-			MaxSize:    global.AppSetting.LogMaxSize,
-			MaxBackups: global.AppSetting.LogMaxBackup,
-			MaxAge:     global.AppSetting.LogMaxAge,
-			Compress:   global.AppSetting.LogCompress,
+			FileName:   a.AppSetting.LogFileName,
+			MaxSize:    a.AppSetting.LogMaxSize,
+			MaxBackups: a.AppSetting.LogMaxBackup,
+			MaxAge:     a.AppSetting.LogMaxAge,
+			Compress:   a.AppSetting.LogCompress,
 		},
 		sysOpts...,
 	)
 
-	// —— 初始化业务日志（仅文件，Info 级别）
-	global.BizLogger = logger2.NewBusinessLogger(
+	a.BizLogger = logger2.NewBusinessLogger(
 		logger2.RotateOptions{
-			FileName:   global.AppSetting.BusinessLogFileName,
-			MaxSize:    global.AppSetting.LogMaxSize,
-			MaxBackups: global.AppSetting.LogMaxBackup,
-			MaxAge:     global.AppSetting.LogMaxAge,
-			Compress:   global.AppSetting.LogCompress,
+			FileName:   a.AppSetting.BusinessLogFileName,
+			MaxSize:    a.AppSetting.LogMaxSize,
+			MaxBackups: a.AppSetting.LogMaxBackup,
+			MaxAge:     a.AppSetting.LogMaxAge,
+			Compress:   a.AppSetting.LogCompress,
 		},
 		bizOpts...,
 	)
-
-	// —— 镜像开关
-	global.MirrorBizToSys = global.AppSetting.MirrorBusinessToSystem
 
 	return nil
 }

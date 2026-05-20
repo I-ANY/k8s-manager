@@ -205,7 +205,7 @@ func BuildDaemonSetResponse(ds *appv1.DaemonSet, svc *corev1.Service, req *reque
 		svcData := gin.H{
 			"created":  true,
 			"name":     svc.Name,
-			"type":     string(svc.Spec.Type),
+			"types":    string(svc.Spec.Type),
 			"ports":    svc.Spec.Ports,
 			"selector": svc.Spec.Selector,
 		}

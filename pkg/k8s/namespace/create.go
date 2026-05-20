@@ -8,9 +8,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8soperation/global"
 	"k8soperation/internal/app/requests"
+	k8sclient "k8soperation/pkg/k8s"
 )
 
-func CreateNamespace(ctx context.Context, req *requests.KubeNamespaceCreateRequest) (*corev1.Namespace, error) {
+func CreateNamespace(client *k8sclient.Client, ctx context.Context, req *requests.KubeNamespaceCreateRequest) (*corev1.Namespace, error) {
 	// 1) 兜底默认值
 	cpu := req.QuotaCPU
 	if cpu == "" {
@@ -35,7 +36,7 @@ func CreateNamespace(ctx context.Context, req *requests.KubeNamespaceCreateReque
 
 	if err != nil {
 		if apierrors.IsAlreadyExists(err) {
-			global.Logger.Warnf("namespace %q already exists", req.Name)
+			client.Log().Warnf("namespace %q already exists", req.Name)
 			exist, getErr := global.KubeClient.CoreV1().
 				Namespaces().
 				Get(ctx, req.Name, metav1.GetOptions{})
@@ -47,7 +48,7 @@ func CreateNamespace(ctx context.Context, req *requests.KubeNamespaceCreateReque
 		return nil, err
 	}
 
-	global.Logger.Infof("namespace %q created", created.Name)
+	client.Log().Infof("namespace %q created", created.Name)
 
 	// 4) 创建 ResourceQuota（使用构造函数）
 	quota := BuildQuotaForNamespace(req.Name, cpu, mem, pods)
@@ -55,7 +56,7 @@ func CreateNamespace(ctx context.Context, req *requests.KubeNamespaceCreateReque
 		ResourceQuotas(req.Name).
 		Create(ctx, quota, metav1.CreateOptions{}); err != nil {
 
-		global.Logger.Errorf("quota create failed: %v", err)
+		client.Log().Errorf("quota create failed: %v", err)
 		return created, fmt.Errorf("namespace created but quota failed: %w", err)
 	}
 
@@ -65,7 +66,7 @@ func CreateNamespace(ctx context.Context, req *requests.KubeNamespaceCreateReque
 		LimitRanges(req.Name).
 		Create(ctx, limit, metav1.CreateOptions{}); err != nil {
 
-		global.Logger.Errorf("limitrange create failed: %v", err)
+		client.Log().Errorf("limitrange create failed: %v", err)
 		return created, fmt.Errorf("namespace created but limitrange failed: %w", err)
 	}
 

@@ -10,12 +10,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8soperation/global"
+	k8sclient "k8soperation/pkg/k8s"
 )
 
 // DrainNode cordon 节点并驱逐其上可驱逐 Pod
-func DrainNode(ctx context.Context, nodeName string) error {
+func DrainNode(client *k8sclient.Client, ctx context.Context, nodeName string) error {
 	// 1) 先 cordon 节点
-	if err := CordonNode(ctx, nodeName, true); err != nil {
+	if err := CordonNode(client, ctx, nodeName, true); err != nil {
 		return fmt.Errorf("cordon node %s failed: %w", nodeName, err)
 	}
 
@@ -68,14 +69,14 @@ func DrainNode(ctx context.Context, nodeName string) error {
 		if err != nil {
 			// 如果是 NotFound 就忽略
 			if apierrors.IsNotFound(err) {
-				global.Logger.Warn("pod already gone when evict",
+				client.Log().Warn("pod already gone when evict",
 					zap.String("node", nodeName),
 					zap.String("pod", pod.Name),
 					zap.String("ns", pod.Namespace),
 				)
 				continue
 			}
-			global.Logger.Error("evict pod failed",
+			client.Log().Error("evict pod failed",
 				zap.String("node", nodeName),
 				zap.String("pod", pod.Name),
 				zap.String("ns", pod.Namespace),

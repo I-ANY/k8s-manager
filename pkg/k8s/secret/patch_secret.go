@@ -7,17 +7,17 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"strings"
 	"time"
 )
 
 // 通用 StrategicMergePatch（适合结构化对象）
-func PatchSecret(ctx context.Context, namespace, name string, patch []byte) (*corev1.Secret, error) {
+func PatchSecret(client *k8s.Client, ctx context.Context, namespace, name string, patch []byte) (*corev1.Secret, error) {
 	c, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	sec, err := global.KubeClient.
+	sec, err := client.Interface.
 		CoreV1().
 		Secrets(namespace).
 		Patch(c, name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
@@ -27,7 +27,7 @@ func PatchSecret(ctx context.Context, namespace, name string, patch []byte) (*co
 	return sec, nil
 }
 
-func PatchSecretJson(ctx context.Context, namespace, content string) (*corev1.Secret, error) {
+func PatchSecretJson(client *k8s.Client, ctx context.Context, namespace, content string) (*corev1.Secret, error) {
 	// 设置超时（10s）
 	c, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
@@ -53,7 +53,7 @@ func PatchSecretJson(ctx context.Context, namespace, content string) (*corev1.Se
 	}
 
 	// 获取旧的 Secret，用于继承类型（防止覆盖为空）
-	old, err := global.KubeClient.CoreV1().
+	old, err := client.Interface.CoreV1().
 		Secrets(namespace).
 		Get(c, sec.Name, metav1.GetOptions{})
 	if err != nil {
@@ -65,13 +65,13 @@ func PatchSecretJson(ctx context.Context, namespace, content string) (*corev1.Se
 	}
 
 	// 执行全量更新（PUT）
-	updated, err := global.KubeClient.CoreV1().
+	updated, err := client.Interface.CoreV1().
 		Secrets(namespace).
 		Update(c, &sec, metav1.UpdateOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("更新 Secret 失败: %w", err)
 	}
 
-	global.Logger.Infof("Secret [%s] 在命名空间 [%s] 更新成功 (类型: %s)", sec.Name, namespace, sec.Type)
+	client.Logger.Infof("Secret [%s] 在命名空间 [%s] 更新成功 (类型: %s)", sec.Name, namespace, sec.Type)
 	return updated, nil
 }

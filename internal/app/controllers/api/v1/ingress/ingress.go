@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/valid"
 )
@@ -36,13 +36,14 @@ func (c *KubeIngressController) Create(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 
 	// 调用 Ingress 创建逻辑
 	ing, err := svc.KubeIngressCreate(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeIngressCreate error", zap.Error(err))
+		a.Logger.Error("service.KubeIngressCreate error", zap.Error(err))
 		return
 	}
 
@@ -80,11 +81,12 @@ func (c *KubeIngressController) List(ctx *gin.Context) {
 	}
 
 	// 4.调用 Service 层逻辑
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	ingresses, total, err := svc.KubeIngressList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeIngressList error", zap.Error(err))
+		a.Logger.Error("service.KubeIngressList error", zap.Error(err))
 		return
 	}
 
@@ -116,11 +118,12 @@ func (c *KubeIngressController) Detail(ctx *gin.Context) {
 	}
 
 	// 3. 调用 Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	ing, err := svc.KubeIngressDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeIngressDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeIngressDetail error", zap.Error(err))
 		return
 	}
 
@@ -149,11 +152,12 @@ func (c *KubeIngressController) Patch(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, &param, nil); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	out, err := svc.KubeIngressPatch(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("KubeIngressPatch error", zap.Error(err))
+		a.Logger.Error("KubeIngressPatch error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{"message": "Ingress StrategicMergePatch 成功", "data": out})
@@ -177,11 +181,12 @@ func (c *KubeIngressController) PatchJSON(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, &param, nil); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	out, err := svc.KubeIngressPatchJSON(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("KubeIngressPatchJSON error", zap.Error(err))
+		a.Logger.Error("KubeIngressPatchJSON error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{"message": "Ingress JSON Merge Patch 成功", "data": out})
@@ -207,9 +212,10 @@ func (c *KubeIngressController) Delete(ctx *gin.Context) {
 	}
 
 	// 调用服务层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeIngressDelete(ctx.Request.Context(), param); err != nil {
-		global.Logger.Error("service.KubeIngressDelete error", zap.Error(err))
+		a.Logger.Error("service.KubeIngressDelete error", zap.Error(err))
 		ctx.Error(err)
 		return
 	}

@@ -1,9 +1,10 @@
 package requests
 
 import (
+	"k8soperation/pkg/valid"
+
 	"github.com/gin-gonic/gin"
 	"github.com/thedevsaddam/govalidator"
-	"k8soperation/pkg/valid"
 )
 
 // ---------------------- Service 公共类型 ----------------------
@@ -34,7 +35,7 @@ type KubeServiceCreateRequest struct {
 
 	// Service 类型：ClusterIP / NodePort / LoadBalancer / Headless
 	// Headless 时 cluster_ip 建议传 "None"
-	Type string `json:"type" valid:"type"`
+	Type string `json:"types" valid:"types"`
 
 	// 选择器：建议用 label 列表；也支持传 map（Swagger 里以字符串展示）
 	SelectorLabels []Label           `json:"selector_labels" valid:"labels"`
@@ -54,13 +55,13 @@ func ValidKubeServiceCreateRequest(data interface{}, ctx *gin.Context) map[strin
 	rules := govalidator.MapData{
 		"namespace": []string{"required"},
 		"name":      []string{"required"},
-		"type":      []string{"required"},
+		"types":     []string{"required"},
 		"ports":     []string{"required"},
 	}
 	messages := govalidator.MapData{
 		"namespace": []string{"required: namespace 不能为空"},
 		"name":      []string{"required: name 不能为空"},
-		"type":      []string{"required: type 不能为空(ClusterIP/NodePort/LoadBalancer/Headless)"},
+		"types":     []string{"required: types 不能为空(ClusterIP/NodePort/LoadBalancer/Headless)"},
 		"ports":     []string{"required: ports 至少配置一个"},
 	}
 	return valid.ValidateOptions(data, rules, messages)
@@ -186,7 +187,7 @@ func NewKubeServiceUpdateTypeRequest() *KubeServiceUpdateTypeRequest {
 
 type KubeServiceUpdateTypeRequest struct {
 	KubeCommonRequest
-	Type string `json:"type" valid:"service_type"`
+	Type string `json:"types" valid:"service_type"`
 	// Headless 时可传 "None"
 	ClusterIP *string `json:"cluster_ip" valid:"cluster_ip"`
 }
@@ -195,12 +196,12 @@ func ValidKubeServiceUpdateTypeRequest(data interface{}, ctx *gin.Context) map[s
 	rules := govalidator.MapData{
 		"namespace": []string{"required"},
 		"name":      []string{"required"},
-		"type":      []string{"required"},
+		"types":     []string{"required"},
 	}
 	messages := govalidator.MapData{
 		"namespace": []string{"required: namespace 不能为空"},
 		"name":      []string{"required: name 不能为空"},
-		"type":      []string{"required: type 不能为空(ClusterIP/NodePort/LoadBalancer/Headless)"},
+		"types":     []string{"required: types 不能为空(ClusterIP/NodePort/LoadBalancer/Headless)"},
 	}
 	return valid.ValidateOptions(data, rules, messages)
 }

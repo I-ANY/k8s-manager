@@ -33,7 +33,7 @@ App:
   LogLevel: debug
   TIMEZONE: "Asia/Shanghai"
   LogType: single
-  LogFileName: storage/logs/app.log         # 系统日志
+  LogFileName: logs/app.log         # 系统日志
   LogMaxSize: 1
   LogMaxBackup: 3
   LogMaxAge: 30

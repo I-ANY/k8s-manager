@@ -2,26 +2,33 @@ package services
 
 import (
 	"context"
-	"k8soperation/global"
+
 	"k8soperation/internal/app/dao"
+	"k8soperation/pkg/app"
 )
 
 type Services struct {
 	ctx context.Context
 	dao *dao.Dao
+	app *app.App
 }
 
-func NewServices(ctx context.Context) *Services {
+func NewServices(ctx context.Context, a *app.App) *Services {
 	return &Services{
 		ctx: ctx,
-		dao: dao.NewDao(global.DB),
+		dao: dao.NewDao(a.DB),
+		app: a,
 	}
 }
 
-// 启动期/后台任务使用（新增）
-func NewBackgroundServices() *Services {
+func NewServicesWithApp(a *app.App) *Services {
 	return &Services{
 		ctx: context.Background(),
-		dao: dao.NewDao(global.DB),
+		dao: dao.NewDao(a.DB),
+		app: a,
 	}
+}
+
+func (s *Services) App() *app.App {
+	return s.app
 }

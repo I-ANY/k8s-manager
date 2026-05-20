@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/models"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
 	"k8soperation/internal/errorcode"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/jwt"
 	"k8soperation/pkg/utils"
@@ -37,6 +37,7 @@ func NewAuthController() *AuthController {
 // AuthController 结构体的登录处理方法
 // 处理用户登录请求，验证用户信息并返回token
 func (u AuthController) Login(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	// 创建登录请求参数结构体
 	param := requests.NewAuthLoginRequest()
 	// 创建响应结构体
@@ -47,7 +48,7 @@ func (u AuthController) Login(ctx *gin.Context) {
 		return
 	}
 	// 创建服务层实例
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 
 	// 调用服务层的用户登录方法
 	user, err := svc.UserLogin(param)
@@ -55,7 +56,7 @@ func (u AuthController) Login(ctx *gin.Context) {
 	// 处理登录错误情况
 	if err != nil {
 		// 记录登录失败的错误日志
-		global.Logger.Error("用户登录失败,", zap.String("error", err.Error()))
+		a.Logger.Error("用户登录失败,", zap.String("error", err.Error()))
 		// 返回登录失败的错误响应
 		response.ToErrorResponse(errorcode.ErrorAuthLoginFail)
 		return
@@ -64,17 +65,22 @@ func (u AuthController) Login(ctx *gin.Context) {
 	// 验证用户密码是否正确
 	if user.Password != param.Password {
 		// 记录密码错误的日志
-		global.Logger.Error("用户登录失败,密码错误")
+		a.Logger.Error("用户登录失败,密码错误")
 		// 返回登录失败的错误响应
 		response.ToErrorResponse(errorcode.ErrorAuthLoginFail)
 		return
 	}
 
 	// 生成 JWT token（必须接收两个返回值）
-	mgr := jwt.NewManager()
+	mgr := jwt.NewManager(
+		a.AppSetting.JWTSigningKey,
+		a.AppSetting.JWTMaxRefreshTime,
+		a.AppSetting.JWTExpireTime,
+		a.AppSetting.AppName,
+	)
 	token, err := mgr.IssueToken(cast.ToString(user.ID), user.Username)
 	if err != nil {
-		global.Logger.Error("颁发 token 失败", zap.String("error", err.Error()))
+		a.Logger.Error("颁发 token 失败", zap.String("error", err.Error()))
 		response.ToErrorResponse(errorcode.ErrorAuthLoginFail)
 		return
 	}
@@ -95,7 +101,7 @@ func (u AuthController) Login(ctx *gin.Context) {
 
 	sessionBty, err := json.Marshal(sessionInfo)
 	if err != nil {
-		global.Logger.Error("序列化 session 失败", zap.String("error", err.Error()))
+		a.Logger.Error("序列化 session 失败", zap.String("error", err.Error()))
 		response.ToErrorResponse(errorcode.ErrorAuthLoginFail)
 		return
 	}
@@ -103,7 +109,7 @@ func (u AuthController) Login(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	session.Set(utils.EncodeMD5(user.Username), string(sessionBty))
 	if err := session.Save(); err != nil {
-		global.Logger.Error("session 保存失败", zap.String("error", err.Error()))
+		a.Logger.Error("session 保存失败", zap.String("error", err.Error()))
 		response.ToErrorResponse(errorcode.ServerError)
 		return
 	}

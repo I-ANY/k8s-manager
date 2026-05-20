@@ -6,7 +6,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
 	"k8soperation/internal/app/models"
 	"k8soperation/pkg/k8s/event"
 	"strings"
@@ -87,10 +86,10 @@ func (s *Services) KubeDeploymentCreate(ctx context.Context, req *requests.KubeD
 				if svcName == "" {
 					svcName = req.Name
 				}
-				if exist, gerr := global.KubeClient.CoreV1().
+				if exist, gerr := s.App().KubeClient.CoreV1().
 					Services(req.Namespace).
 					Get(ctx, svcName, metav1.GetOptions{}); gerr == nil {
-					global.Logger.Infof("service %s/%s already exists, reuse it", req.Namespace, svcName)
+					s.App().Logger.Infof("service %s/%s already exists, reuse it", req.Namespace, svcName)
 					return dp, exist, nil
 				}
 				// Get 失败才回滚
@@ -98,10 +97,10 @@ func (s *Services) KubeDeploymentCreate(ctx context.Context, req *requests.KubeD
 
 			// 真失败 → 回滚 Deployment（带传播策略，清理 RS/Pods）
 			pol := metav1.DeletePropagationForeground // 或 Background
-			if delErr := global.KubeClient.AppsV1().
+			if delErr := s.App().KubeClient.AppsV1().
 				Deployments(req.Namespace).
 				Delete(ctx, dp.Name, metav1.DeleteOptions{PropagationPolicy: &pol}); delErr != nil {
-				global.Logger.Errorf("rollback delete deployment %s/%s failed: %v", req.Namespace, dp.Name, delErr)
+				s.App().Logger.Errorf("rollback delete deployment %s/%s failed: %v", req.Namespace, dp.Name, delErr)
 			}
 			return nil, nil, fmt.Errorf("create service failed: %w", err)
 		}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	batchv1 "k8s.io/api/batch/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/pkg/k8s/job"
 	"time"
@@ -19,13 +18,13 @@ func (s *Services) KubeJobCreate(ctx context.Context, req *requests.KubeJobCreat
 	jobObj, err := job.CreateJob(ctx, req)
 	if err != nil {
 		if apierrors.IsAlreadyExists(err) {
-			global.Logger.Warnf("job %s/%s already exists", req.Namespace, req.Name)
+			s.App().Logger.Warnf("job %s/%s already exists", req.Namespace, req.Name)
 			return nil, fmt.Errorf("job %q already exists in namespace %q", req.Name, req.Namespace)
 		}
 		return nil, fmt.Errorf("create job failed: %w", err)
 	}
 
-	global.Logger.Infof("job %s/%s created successfully", req.Namespace, jobObj.Name)
+	s.App().Logger.Infof("job %s/%s created successfully", req.Namespace, jobObj.Name)
 	return jobObj, nil
 }
 

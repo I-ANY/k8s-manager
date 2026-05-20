@@ -468,7 +468,7 @@ definitions:
       labels:
         type: string
       mode:
-        description: 推荐传 mode（更语义化），兼容 type（原生 k8s 类型字符串）
+        description: 推荐传 mode（更语义化），兼容 types（原生 k8s 类型字符串）
         type: string
       name:
         type: string

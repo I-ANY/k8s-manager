@@ -3,8 +3,9 @@ package deployment
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -212,7 +213,7 @@ func BuildDeploymentResponse(dp *appv1.Deployment, svc *corev1.Service, req *req
 		svcData := gin.H{
 			"created":  true,                  // 标记服务已创建
 			"name":     svc.Name,              // 服务名称
-			"type":     string(svc.Spec.Type), // 服务类型，转换为字符串
+			"types":    string(svc.Spec.Type), // 服务类型，转换为字符串
 			"ports":    svc.Spec.Ports,        // 服务端口信息
 			"selector": svc.Spec.Selector,     // 服务选择器
 		}

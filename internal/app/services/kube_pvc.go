@@ -8,7 +8,6 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/pkg/k8s/pvc"
 	"time"
@@ -21,18 +20,18 @@ func (s *Services) KubeCreatePVC(ctx context.Context, req *requests.KubePVCCreat
 	defer cancel()
 
 	// 2) 调用资源层进行构建 + 创建
-	created, err := pvc.CreatePersistentVolumeClaim(c, req)
+	created, err := pvc.CreatePersistentVolumeClaim(s.App().K8sClient(), c, req)
 	if err != nil {
 		if apierrors.IsAlreadyExists(err) {
-			global.Logger.Warnf("PersistentVolumeClaim %s already exists in namespace %s", req.Name, req.Namespace)
+			s.App().Logger.Warnf("PersistentVolumeClaim %s already exists in namespace %s", req.Name, req.Namespace)
 			return nil, fmt.Errorf("PersistentVolumeClaim %q already exists in namespace %q", req.Name, req.Namespace)
 		}
-		global.Logger.Errorf("create PersistentVolumeClaim failed: %v", err)
+		s.App().Logger.Errorf("create PersistentVolumeClaim failed: %v", err)
 		return nil, err
 	}
 
 	// 3) 成功日志
-	global.Logger.Infof("PersistentVolumeClaim %q created successfully in namespace %q", created.Name, req.Namespace)
+	s.App().Logger.Infof("PersistentVolumeClaim %q created successfully in namespace %q", created.Name, req.Namespace)
 	return created, nil
 }
 
@@ -43,7 +42,7 @@ func (s *Services) KubePVCList(ctx context.Context, param *requests.KubePVCListR
 
 	items, total, err := pvc.GetPVCList(c, param.Namespace, param.Name, param.Page, param.Limit)
 	if err != nil {
-		global.Logger.Errorf("list PVC failed: %v", err)
+		s.App().Logger.Errorf("list PVC failed: %v", err)
 		return nil, 0, err
 	}
 	return items, total, nil
@@ -54,13 +53,13 @@ func (s *Services) KubePVCDetail(ctx context.Context, param *requests.KubePVCDet
 	c, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	pvcDetail, err := pvc.GetPVCDetail(c, param.Namespace, param.Name)
+	pvcDetail, err := pvc.GetPVCDetail(s.App().K8sClient(), c, param.Namespace, param.Name)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			global.Logger.Warnf("PersistentVolumeClaim %s/%s not found", param.Namespace, param.Name)
+			s.App().Logger.Warnf("PersistentVolumeClaim %s/%s not found", param.Namespace, param.Name)
 			return nil, fmt.Errorf("PersistentVolumeClaim %q not found in namespace %q", param.Name, param.Namespace)
 		}
-		global.Logger.Error("get PersistentVolumeClaim detail failed", zap.Error(err))
+		s.App().Logger.Error("get PersistentVolumeClaim detail failed", zap.Error(err))
 		return nil, err
 	}
 
@@ -73,14 +72,14 @@ func (s *Services) KubePVCDelete(ctx context.Context, param *requests.KubePVCDel
 
 	if err := pvc.DeletePersistentVolumeClaim(c, param.Namespace, param.Name); err != nil {
 		if apierrors.IsNotFound(err) {
-			global.Logger.Warnf("PersistentVolumeClaim %s/%s not found", param.Namespace, param.Name)
+			s.App().Logger.Warnf("PersistentVolumeClaim %s/%s not found", param.Namespace, param.Name)
 			return nil // 幂等
 		}
-		global.Logger.Errorf("delete PersistentVolumeClaim %s/%s failed: %v", param.Namespace, param.Name, err)
+		s.App().Logger.Errorf("delete PersistentVolumeClaim %s/%s failed: %v", param.Namespace, param.Name, err)
 		return err
 	}
 
-	global.Logger.Infof("PersistentVolumeClaim %s/%s deleted successfully", param.Namespace, param.Name)
+	s.App().Logger.Infof("PersistentVolumeClaim %s/%s deleted successfully", param.Namespace, param.Name)
 	return nil
 }
 
@@ -90,7 +89,7 @@ func (s *Services) KubePVCResize(ctx context.Context, req *requests.KubePVCResiz
 	defer cancel()
 
 	// 1) 读取当前 PVC
-	curr, err := global.KubeClient.CoreV1().
+	curr, err := s.App().KubeClient.CoreV1().
 		PersistentVolumeClaims(req.Namespace).
 		Get(c, req.Name, metav1.GetOptions{})
 	if err != nil {
@@ -113,7 +112,7 @@ func (s *Services) KubePVCResize(ctx context.Context, req *requests.KubePVCResiz
 	// 3) 校验 StorageClass 是否允许扩容（若有 SC）
 	if curr.Spec.StorageClassName != nil && *curr.Spec.StorageClassName != "" {
 		scName := *curr.Spec.StorageClassName
-		sc, err := global.KubeClient.StorageV1().StorageClasses().Get(c, scName, metav1.GetOptions{})
+		sc, err := s.App().KubeClient.StorageV1().StorageClasses().Get(c, scName, metav1.GetOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("get StorageClass %q failed: %w", scName, err)
 		}

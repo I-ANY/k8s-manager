@@ -1,11 +1,11 @@
 package dataselect
 
 import (
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"strings"
+
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 // ToCells 是一个泛型函数，将任意类型的切片转换为 DataCell 类型的切片
@@ -66,7 +66,7 @@ func ConvertEnvVarSpec(envs []requests.EnvironmentVariable) []corev1.EnvVar {
 	return res // 返回转换后的Kubernetes环境变量列表
 }
 
-func GetContainerProbe(probe requests.HealthCheckDetail) corev1.ProbeHandler {
+func GetContainerProbe(client *k8s.Client, probe requests.HealthCheckDetail) corev1.ProbeHandler {
 	var ph corev1.ProbeHandler // 定义一个 ProbeHandler 类型的变量 ph，用于存储探测处理器
 
 	// 解析端口（当前 DTO 只有数值端口）
@@ -116,7 +116,7 @@ func GetContainerProbe(probe requests.HealthCheckDetail) corev1.ProbeHandler {
 		ph.Exec = &corev1.ExecAction{Command: cmd} // 设置命令执行探测处理器
 
 	default:
-		global.Logger.Errorf("probe type %q is not supported; expect HTTP/TCP/EXEC", probe.Type) // 记录错误日志，表示不支持的探测类型
+		client.Logger.Errorf("probe types %q is not supported; expect HTTP/TCP/EXEC", probe.Type) // 记录错误日志，表示不支持的探测类型
 	}
 
 	return ph // 返回探测处理器

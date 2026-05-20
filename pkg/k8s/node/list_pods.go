@@ -7,10 +7,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8soperation/global"
+	k8sclient "k8soperation/pkg/k8s"
 )
 
 // ListPodsByNode 列出指定 Node 上运行的所有 Pod
-func ListPodsByNode(ctx context.Context, nodeName string) ([]corev1.Pod, error) {
+func ListPodsByNode(client *k8sclient.Client, ctx context.Context, nodeName string) ([]corev1.Pod, error) {
 	// Pod 是 namespace 级资源，这里需要跨所有命名空间查
 	podList, err := global.KubeClient.CoreV1().
 		Pods(""). //空字符串代表“所有命名空间”
@@ -18,7 +19,7 @@ func ListPodsByNode(ctx context.Context, nodeName string) ([]corev1.Pod, error) 
 			FieldSelector: fmt.Sprintf("spec.nodeName=%s", nodeName),
 		})
 	if err != nil {
-		global.Logger.Error("list Pods by node failed",
+		client.Log().Error("list Pods by node failed",
 			zap.String("nodeName", nodeName),
 			zap.Error(err),
 		)

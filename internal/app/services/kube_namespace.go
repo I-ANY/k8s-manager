@@ -6,7 +6,6 @@ import (
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/pkg/k8s/namespace"
 	"time"
@@ -18,7 +17,7 @@ func (s *Services) KubeCreateNamespace(ctx context.Context, req *requests.KubeNa
 	c, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 
-	return namespace.CreateNamespace(c, req)
+	return namespace.CreateNamespace(s.App().K8sClient(), c, req)
 }
 
 func (s *Services) KubeNamespaceList(ctx context.Context, param *requests.KubeNamespaceListRequest) ([]corev1.Namespace, int, error) {
@@ -27,7 +26,7 @@ func (s *Services) KubeNamespaceList(ctx context.Context, param *requests.KubeNa
 
 	items, total, err := namespace.GetNamespaceList(c, param.Name, param.Page, param.Limit)
 	if err != nil {
-		global.Logger.Errorf("list Namespace failed: %v", err)
+		s.App().Logger.Errorf("list Namespace failed: %v", err)
 		return nil, 0, err
 	}
 
@@ -38,14 +37,14 @@ func (s *Services) KubeNamespaceDetail(ctx context.Context, param *requests.Kube
 	c, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	nsDetail, err := namespace.GetNamespaceDetail(c, param.Name)
+	nsDetail, err := namespace.GetNamespaceDetail(s.App().K8sClient(), c, param.Name)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			global.Logger.Warnf("Namespace %s not found", param.Name)
+			s.App().Logger.Warnf("Namespace %s not found", param.Name)
 			return nil, fmt.Errorf("Namespace %q not found", param.Name)
 		}
 
-		global.Logger.Error("get Namespace detail failed", zap.Error(err))
+		s.App().Logger.Error("get Namespace detail failed", zap.Error(err))
 		return nil, err
 	}
 
@@ -61,15 +60,15 @@ func (s *Services) KubeNamespaceDelete(ctx context.Context, param *requests.Kube
 	if err := namespace.DeleteNamespace(c, param.Name); err != nil {
 		// 不存在视为删除成功（幂等）
 		if apierrors.IsNotFound(err) {
-			global.Logger.Warnf("Namespace %s not found", param.Name)
+			s.App().Logger.Warnf("Namespace %s not found", param.Name)
 			return nil
 		}
 
-		global.Logger.Errorf("delete Namespace %s failed: %v", param.Name, err)
+		s.App().Logger.Errorf("delete Namespace %s failed: %v", param.Name, err)
 		return err
 	}
 
-	global.Logger.Infof("Namespace %s deleted successfully", param.Name)
+	s.App().Logger.Infof("Namespace %s deleted successfully", param.Name)
 	return nil
 }
 
@@ -79,10 +78,10 @@ func (s *Services) KubeNamespaceUpdate(ctx context.Context, param *requests.Kube
 
 	updated, err := namespace.PatchNamespace(c, param.Name, param.Content)
 	if err != nil {
-		global.Logger.Errorf("update Namespace %s failed: %v", param.Name, err)
+		s.App().Logger.Errorf("update Namespace %s failed: %v", param.Name, err)
 		return nil, err
 	}
 
-	global.Logger.Infof("Namespace %s updated successfully", param.Name)
+	s.App().Logger.Infof("Namespace %s updated successfully", param.Name)
 	return updated, nil
 }

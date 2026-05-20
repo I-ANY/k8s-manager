@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/k8s/job"
 	"k8soperation/pkg/valid"
@@ -38,13 +38,14 @@ func (c *KubeJobController) Create(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 
 	// 调用 Job 创建逻辑（只有 Job，没有 Service）
 	jobObj, err := svc.KubeJobCreate(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeJobCreate error", zap.Error(err))
+		a.Logger.Error("service.KubeJobCreate error", zap.Error(err))
 		return
 	}
 
@@ -77,11 +78,12 @@ func (c *KubeJobController) List(ctx *gin.Context) {
 	}
 
 	// 4) 调用 Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	jobs, total, err := svc.KubeJobList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeJobList error", zap.Error(err))
+		a.Logger.Error("service.KubeJobList error", zap.Error(err))
 		return
 	}
 
@@ -113,11 +115,12 @@ func (c *KubeJobController) Detail(ctx *gin.Context) {
 	}
 
 	// 调用 Service 层逻辑
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	jobObj, err := svc.KubeJobDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeJobDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeJobDetail error", zap.Error(err))
 		return
 	}
 
@@ -149,9 +152,10 @@ func (c *KubeJobController) Delete(ctx *gin.Context) {
 	}
 
 	// 调用 Service 层删除逻辑
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeJobDelete(ctx.Request.Context(), param); err != nil {
-		global.Logger.Error("service.KubeJobDelete error", zap.Error(err))
+		a.Logger.Error("service.KubeJobDelete error", zap.Error(err))
 		ctx.Error(err)
 		return
 	}
@@ -184,12 +188,13 @@ func (c *KubeJobController) Suspend(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 
 	// 调用 Service 层逻辑
 	if err := svc.KubeJobSuspend(ctx.Request.Context(), req); err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeJobSuspend error", zap.Error(err))
+		a.Logger.Error("service.KubeJobSuspend error", zap.Error(err))
 		return
 	}
 
@@ -226,13 +231,14 @@ func (c *KubeJobController) Restart(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 
 	// 调用 Service 层逻辑
 	jobObj, err := svc.KubeJobRestart(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeJobRestart error", zap.Error(err))
+		a.Logger.Error("service.KubeJobRestart error", zap.Error(err))
 		return
 	}
 

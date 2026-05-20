@@ -2,7 +2,7 @@ package svc
 
 import (
 	"context"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
@@ -11,7 +11,7 @@ import (
 )
 
 // GetServiceList 与 GetDeploymentList 逻辑一致，返回 Service 列表 + 总数（分页前）
-func GetServiceList(ctx context.Context, name, namespace string, page, limit int) ([]v1.Service, int, error) {
+func GetServiceList(client *k8s.Client, ctx context.Context, name, namespace string, page, limit int) ([]v1.Service, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -23,7 +23,7 @@ func GetServiceList(ctx context.Context, name, namespace string, page, limit int
 	}
 
 	// 拉取 Service 列表（可在这里加 LabelSelector / FieldSelector）
-	list, err := global.KubeClient.CoreV1().
+	list, err := client.Interface.CoreV1().
 		Services(namespace).
 		List(ctx, metav1.ListOptions{})
 	if err != nil {

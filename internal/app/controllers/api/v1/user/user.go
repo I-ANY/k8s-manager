@@ -3,10 +3,10 @@ package user
 import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
 	"k8soperation/internal/errorcode"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/valid"
 )
@@ -29,6 +29,7 @@ func NewUserController() *UserController {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/user/create [post]
 func (c *UserController) Create(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	// 创建一个新的用户创建请求参数对象
 	param := requests.NewUserUserCreateRequest()
 	// 创建一个新的响应对象，用于返回处理结果
@@ -40,11 +41,11 @@ func (c *UserController) Create(ctx *gin.Context) {
 	}
 
 	// 创建一个新的服务对象
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	// 调用服务层的用户创建方法，如果创建失败则记录错误并返回错误响应
 	if err := svc.UserCreate(param); err != nil {
-		global.Logger.Error("创建用户失败,", zap.String("error", err.Error())) // 记录错误日志
-		response.ToErrorResponse(errorcode.ErrorUserCreateFail)          // 返回创建失败的错误响应
+		a.Logger.Error("创建用户失败,", zap.String("error", err.Error())) // 记录错误日志
+		response.ToErrorResponse(errorcode.ErrorUserCreateFail)     // 返回创建失败的错误响应
 		return
 	}
 	// 如果创建成功，返回成功响应
@@ -61,6 +62,7 @@ func (c *UserController) Create(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/user/delete [post]
 func (c *UserController) Delete(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewCommonIdRequest()
 	response := response.NewResponse(ctx)
 
@@ -68,9 +70,9 @@ func (c *UserController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.UserDelete(param); err != nil {
-		global.Logger.Error("删除用户失败,", zap.String("error", err.Error()))
+		a.Logger.Error("删除用户失败,", zap.String("error", err.Error()))
 		response.ToErrorResponse(errorcode.ErrorUserDeleteFail)
 		return
 	}
@@ -90,6 +92,7 @@ func (c *UserController) Delete(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/user/update [post]
 func (u *UserController) Update(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewUserUpdateRequest()
 	response := response.NewResponse(ctx)
 
@@ -97,9 +100,9 @@ func (u *UserController) Update(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.UserUpdate(param); err != nil {
-		global.Logger.Error("更新用户失败,", zap.String("error", err.Error()))
+		a.Logger.Error("更新用户失败,", zap.String("error", err.Error()))
 		response.ToErrorResponse(errorcode.ErrorUserUpdateFail)
 		return
 	}
@@ -123,6 +126,7 @@ func (u *UserController) Update(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/user/list [get]
 func (c *UserController) List(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewUserListRequest()
 	response := response.NewResponse(ctx)
 
@@ -130,10 +134,10 @@ func (c *UserController) List(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	users, err := svc.UserList(param)
 	if err != nil {
-		global.Logger.Error("获取用户列表失败,", zap.String("error", err.Error()))
+		a.Logger.Error("获取用户列表失败,", zap.String("error", err.Error()))
 		response.ToErrorResponse(errorcode.ErrorUserListFail)
 		return
 	}

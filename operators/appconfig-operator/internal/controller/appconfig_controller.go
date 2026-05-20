@@ -212,7 +212,7 @@ func needUpdateDeployment(existing, desired *appsv1.Deployment) bool {
 	return !equality.Semantic.DeepEqual(existing.Spec, desired.Spec)
 }
 
-// setCondition 根据 type 更新/插入 Condition
+// setCondition 根据 types 更新/插入 Condition
 func setCondition(status *appv1alpha1.AppConfigStatus, condType string, condStatus metav1.ConditionStatus,
 	reason, message string, now metav1.Time) {
 
@@ -224,7 +224,7 @@ func setCondition(status *appv1alpha1.AppConfigStatus, condType string, condStat
 		LastTransitionTime: now,
 	}
 
-	// 如果已存在同 type，替换
+	// 如果已存在同 types，替换
 	for i, c := range status.Conditions {
 		if c.Type == condType {
 			status.Conditions[i] = newCond

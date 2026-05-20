@@ -6,7 +6,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
@@ -17,7 +17,7 @@ import (
 //	opts := metav1.DeleteOptions{PropagationPolicy: &fg}
 //
 //	// 发起删除
-//	if err := global.KubeClient.AppsV1().
+//	if err := client.Interface.AppsV1().
 //		StatefulSets(namespace).
 //		Delete(c, name, opts); err != nil {
 //		if apierrors.IsNotFound(err) {
@@ -33,7 +33,7 @@ import (
 //		300*time.Second, // timeout（与上面 ctx 共同生效）
 //		true,            // immediate
 //		func(ctx context.Context) (done bool, err error) {
-//			_, err = global.KubeClient.AppsV1().
+//			_, err = client.Interface.AppsV1().
 //				StatefulSets(namespace).
 //				Get(ctx, name, metav1.GetOptions{})
 //			if apierrors.IsNotFound(err) {
@@ -46,9 +46,9 @@ import (
 //	return err
 //}
 
-func DeleteStatefulSet(ctx context.Context, name, ns string, timeout time.Duration) error {
+func DeleteStatefulSet(client *k8s.Client, ctx context.Context, name, ns string, timeout time.Duration) error {
 	fg := metav1.DeletePropagationForeground
-	if err := global.KubeClient.AppsV1().StatefulSets(ns).Delete(ctx, name, metav1.DeleteOptions{PropagationPolicy: &fg}); err != nil {
+	if err := client.Interface.AppsV1().StatefulSets(ns).Delete(ctx, name, metav1.DeleteOptions{PropagationPolicy: &fg}); err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil
 		}
@@ -63,7 +63,7 @@ func DeleteStatefulSet(ctx context.Context, name, ns string, timeout time.Durati
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	return wait.PollUntilContextTimeout(c, 2*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
-		_, err := global.KubeClient.AppsV1().StatefulSets(ns).Get(ctx, name, metav1.GetOptions{})
+		_, err := client.Interface.AppsV1().StatefulSets(ns).Get(ctx, name, metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			return true, nil
 		}

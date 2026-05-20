@@ -8,10 +8,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8soperation/global"
 	"k8soperation/internal/app/requests"
+	k8sclient "k8soperation/pkg/k8s"
 )
 
 // CreatePersistentVolumeClaim 创建 PVC（命名空间级）
-func CreatePersistentVolumeClaim(ctx context.Context, req *requests.KubePVCCreateRequest) (*corev1.PersistentVolumeClaim, error) {
+func CreatePersistentVolumeClaim(client *k8sclient.Client, ctx context.Context, req *requests.KubePVCCreateRequest) (*corev1.PersistentVolumeClaim, error) {
 	// 1) 构造 PVC 对象
 	pvc := BuildPVCFromReq(req)
 
@@ -23,10 +24,10 @@ func CreatePersistentVolumeClaim(ctx context.Context, req *requests.KubePVCCreat
 		if apierrors.IsAlreadyExists(err) {
 			return nil, fmt.Errorf("PersistentVolumeClaim %q already exists in namespace %q", pvc.Name, pvc.Namespace)
 		}
-		global.Logger.Errorf("create PersistentVolumeClaim failed: %v", err)
+		client.Log().Errorf("create PersistentVolumeClaim failed: %v", err)
 		return nil, err
 	}
 
-	global.Logger.Infof("PersistentVolumeClaim %q created successfully in namespace %q", created.Name, created.Namespace)
+	client.Log().Infof("PersistentVolumeClaim %q created successfully in namespace %q", created.Name, created.Namespace)
 	return created, nil
 }

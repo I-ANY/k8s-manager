@@ -7,12 +7,12 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
 // SetJobSuspend 设置 Job 的暂停状态（true=暂停，false=恢复）
-func SetJobSuspend(ctx context.Context, namespace, name string, suspend bool) error {
+func SetJobSuspend(client *k8s.Client, ctx context.Context, namespace, name string, suspend bool) error {
 	c, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -30,7 +30,7 @@ func SetJobSuspend(ctx context.Context, namespace, name string, suspend bool) er
 	}
 
 	// 3 发起 PATCH 请求（StrategicMergePatch）
-	_, err = global.KubeClient.BatchV1().Jobs(namespace).Patch(
+	_, err = client.Interface.BatchV1().Jobs(namespace).Patch(
 		c,
 		name,
 		types.StrategicMergePatchType,
@@ -48,6 +48,6 @@ func SetJobSuspend(ctx context.Context, namespace, name string, suspend bool) er
 	if !suspend {
 		action = "resumed"
 	}
-	global.Logger.Infof("Job %q in namespace %q %s successfully", name, namespace, action)
+	client.Logger.Infof("Job %q in namespace %q %s successfully", name, namespace, action)
 	return nil
 }

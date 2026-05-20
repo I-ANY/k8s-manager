@@ -4,10 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"io"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
 	"k8soperation/internal/errorcode"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/valid"
 )
@@ -32,11 +32,12 @@ func NewPodController() *PodController {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/pod/list [get]
 func (c *PodController) List(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewKubePodListRequest()
 	resp := response.NewResponse(ctx)
 
 	// 1) 防御：K8s 客户端未初始化
-	if global.KubeClient == nil {
+	if a.KubeClient == nil {
 		// 如果你有专门的错误码，建议用 ErrorClusterNotInitialized 之类的
 		resp.ToErrorResponse(errorcode.ErrorK8sPodListFail.WithDetails("k8s client not initialized"))
 		return
@@ -47,13 +48,13 @@ func (c *PodController) List(ctx *gin.Context) {
 	}
 
 	// 创建服务实例，传入上下文ctx
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	// 调用服务实例的KubePodList方法获取Pod列表，传入参数param
 	pods, err := svc.KubePodList(ctx, param)
 	// 检查获取Pod列表时是否发生错误
 	if err != nil {
 		// 记录错误日志，包含错误信息
-		global.Logger.Error("获取Pod列表失败", zap.String("error", err.Error()))
+		a.Logger.Error("获取Pod列表失败", zap.String("error", err.Error()))
 		// 返回错误响应，包含错误代码和详细信息
 		resp.ToErrorResponse(errorcode.ErrorK8sPodListFail.WithDetails(err.Error()))
 		// 终止当前函数执行
@@ -74,6 +75,7 @@ func (c *PodController) List(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/pod/update [post]
 func (c *PodController) Update(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewKubePodUpdateRequest()
 	resp := response.NewResponse(ctx)
 
@@ -82,9 +84,9 @@ func (c *PodController) Update(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubePodUpdate(param); err != nil {
-		global.Logger.Errorf("更新Pod失败: %v", err)
+		a.Logger.Errorf("更新Pod失败: %v", err)
 		resp.ToErrorResponse(errorcode.ErrorK8sPodUpdateFail.WithDetails(err.Error()))
 		return
 	}
@@ -103,6 +105,7 @@ func (c *PodController) Update(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/pod/patch_image [put]
 func (c *PodController) PatchImage(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewPatchPodImageRequest()
 	resp := response.NewResponse(ctx)
 
@@ -111,14 +114,14 @@ func (c *PodController) PatchImage(ctx *gin.Context) {
 		return
 	}
 
-	if global.KubeClient == nil {
+	if a.KubeClient == nil {
 		resp.ToErrorResponse(errorcode.ErrorClusterInitFailed.WithDetails("k8s client 未初始化"))
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.PatchPodImage(param); err != nil {
-		global.Logger.Errorf("PatchPodImage 失败: %v", err)
+		a.Logger.Errorf("PatchPodImage 失败: %v", err)
 		resp.ToErrorResponse(errorcode.ErrorK8sPodPatchFail.WithDetails(err.Error()))
 		return
 	}
@@ -145,6 +148,7 @@ func (c *PodController) PatchImage(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/pod/grace_delete_pod [delete]
 func (c *PodController) DeletePod(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	resp := response.NewResponse(ctx)
 
 	param := requests.NewKubePodDeleteRequest()
@@ -152,12 +156,12 @@ func (c *PodController) DeletePod(ctx *gin.Context) {
 		return
 	}
 
-	if global.KubeClient == nil {
+	if a.KubeClient == nil {
 		resp.ToErrorResponse(errorcode.ErrorClusterInitFailed.WithDetails("k8s client 未初始化"))
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubePodDelete(param); err != nil {
 		resp.ToErrorResponse(errorcode.ErrorK8sPodDeleteFail.WithDetails(err.Error()))
 		return
@@ -184,6 +188,7 @@ func (c *PodController) DeletePod(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/pod/detail [get]
 func (c *PodController) Detail(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewKubePodDetailRequest()
 	resp := response.NewResponse(ctx)
 
@@ -192,10 +197,10 @@ func (c *PodController) Detail(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	pod, err := svc.KubePodDetail(param)
 	if err != nil {
-		global.Logger.Errorf("获取Pod详情失败: %v", err)
+		a.Logger.Errorf("获取Pod详情失败: %v", err)
 		resp.ToErrorResponse(errorcode.ErrorK8sPodDetailFail.WithDetails(err.Error()))
 		return
 	}
@@ -215,6 +220,7 @@ func (c *PodController) Detail(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/pod/container_name [get]
 func (c *PodController) GetContainerName(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewKubePodDetailRequest()
 	resp := response.NewResponse(ctx)
 
@@ -223,10 +229,10 @@ func (c *PodController) GetContainerName(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	containerName, err := svc.GetContainerNames(param)
 	if err != nil {
-		global.Logger.Errorf("获取Pod容器名失败: %v", err)
+		a.Logger.Errorf("获取Pod容器名失败: %v", err)
 		resp.ToErrorResponse(errorcode.ErrorK8sGetContainerName.WithDetails(err.Error()))
 		return
 	}
@@ -246,19 +252,20 @@ func (c *PodController) GetContainerName(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/pod/init_container_name [get]
 func (c *PodController) GetInitContainerName(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewKubeCommonRequest()
 	resp := response.NewResponse(ctx)
 
 	if ok := valid.Validate(ctx, param, requests.VaildKubeCommonRequest); !ok {
-		global.Logger.Errorf("获取Pod的Init容器名失败: %v", ok)
+		a.Logger.Errorf("获取Pod的Init容器名失败: %v", ok)
 		resp.ToErrorResponse(errorcode.InvalidParams)
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	initContainerName, err := svc.GetInitContainerNames(param)
 	if err != nil {
-		global.Logger.Errorf("获取Pod的Init容器名失败: %v", err)
+		a.Logger.Errorf("获取Pod的Init容器名失败: %v", err)
 		resp.ToErrorResponse(errorcode.ErrorK8sGetInitContainerName.WithDetails(err.Error()))
 		return
 	}
@@ -278,24 +285,25 @@ func (c *PodController) GetInitContainerName(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/pod/container_image [get]
 func (c *PodController) GetContainerImages(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewKubePodDetailRequest()
 	resp := response.NewResponse(ctx)
 
 	if ok := valid.Validate(ctx, param, requests.ValidKubePodDetailRequest); !ok {
-		global.Logger.Errorf("校验失败：%v", ok)
+		a.Logger.Errorf("校验失败：%v", ok)
 		resp.ToErrorResponse(errorcode.InvalidParams)
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	containerImages, err := svc.GetContainerImages(param)
 	if err != nil {
-		global.Logger.Errorf("获取Pod容器镜像失败: %v", err)
+		a.Logger.Errorf("获取Pod容器镜像失败: %v", err)
 		resp.ToErrorResponse(errorcode.ErrorK8sGetContainerImage.WithDetails(err.Error()))
 		return
 	}
 
-	global.Logger.Infof("获取Pod容器镜像成功，总数: %d", len(containerImages))
+	a.Logger.Infof("获取Pod容器镜像成功，总数: %d", len(containerImages))
 	resp.SuccessList(containerImages, len(containerImages))
 }
 
@@ -311,24 +319,25 @@ func (c *PodController) GetContainerImages(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/pod/init_container_image [get]
 func (c *PodController) GetInitContainerImages(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	param := requests.NewKubeCommonRequest()
 	resp := response.NewResponse(ctx)
 
 	if ok := valid.Validate(ctx, param, requests.VaildKubeCommonRequest); !ok {
-		global.Logger.Errorf("校验失败：%v", ok)
+		a.Logger.Errorf("校验失败：%v", ok)
 		resp.ToErrorResponse(errorcode.InvalidParams)
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	initContainerImages, err := svc.GetInitContainerImages(param)
 	if err != nil {
-		global.Logger.Errorf("获取Pod的Init容器镜像失败: %v", err)
+		a.Logger.Errorf("获取Pod的Init容器镜像失败: %v", err)
 		resp.ToErrorResponse(errorcode.ErrorK8sGetInitContainerImage.WithDetails(err.Error()))
 		return
 	}
 
-	global.Logger.Infof("获取Pod的Init容器镜像成功: %d", len(initContainerImages))
+	a.Logger.Infof("获取Pod的Init容器镜像成功: %d", len(initContainerImages))
 	resp.SuccessList(initContainerImages, len(initContainerImages))
 }
 
@@ -348,6 +357,7 @@ func (c *PodController) GetInitContainerImages(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/pod/container_log [get]
 func (c *PodController) GetContainerLogs(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	// 1) 绑定 + 校验
 	param := requests.NewKubePodLogRequest()
 	resp := response.NewResponse(ctx)
@@ -357,12 +367,12 @@ func (c *PodController) GetContainerLogs(ctx *gin.Context) {
 	}
 
 	// 2) 检查 K8s 客户端
-	if global.KubeClient == nil {
+	if a.KubeClient == nil {
 		resp.ToErrorResponse(errorcode.ErrorClusterInitFailed.WithDetails("k8s client 未初始化"))
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 
 	if param.Follow {
 		// —— 流式 —— //
@@ -380,14 +390,14 @@ func (c *PodController) GetContainerLogs(ctx *gin.Context) {
 		defer func(rc io.ReadCloser) {
 			err := rc.Close()
 			if err != nil {
-				global.Logger.Errorf("关闭流式日志失败 ns=%s pod=%s container=%s : %v",
+				a.Logger.Errorf("关闭流式日志失败 ns=%s pod=%s container=%s : %v",
 					param.Namespace, param.Name, param.Container, err)
 			}
 		}(rc)
 		ctx.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
 		if _, err := io.Copy(ctx.Writer, rc); err != nil {
-			global.Logger.Errorf("stream copy err ns=%s pod=%s container=%s : %v",
+			a.Logger.Errorf("stream copy err ns=%s pod=%s container=%s : %v",
 				param.Namespace, param.Name, param.Container, err)
 		}
 		return // 这里要 return，避免继续往下走
@@ -397,7 +407,7 @@ func (c *PodController) GetContainerLogs(ctx *gin.Context) {
 	logStr, err := svc.KubePodLog(ctx.Request.Context(),
 		param.Name, param.Namespace, param.Container, param.Tail)
 	if err != nil {
-		global.Logger.Errorf("get pod log failed ns=%s pod=%s container=%s tail=%d : %v",
+		a.Logger.Errorf("get pod log failed ns=%s pod=%s container=%s tail=%d : %v",
 			param.Namespace, param.Name, param.Container, param.Tail, err)
 		resp.ToErrorResponse(errorcode.ErrorK8sGetContainerLog.WithDetails(err.Error()))
 		return
@@ -425,9 +435,10 @@ func (c *PodController) GetContainerLogs(ctx *gin.Context) {
 // @Failure 500 {object} errorcode.Error "内部错误"
 // @Router /api/v1/k8s/pod/container_logs [get]
 func (k *PodController) GetContainerLog(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 
 	// 临时调试：看看客户端到底传了什么
-	global.Logger.Info("DEBUG RAW QUERY",
+	a.Logger.Info("DEBUG RAW QUERY",
 		zap.String("raw", ctx.Request.URL.RawQuery),
 		zap.String("name", ctx.Query("name")),
 		zap.String("namespace", ctx.Query("namespace")),
@@ -442,10 +453,10 @@ func (k *PodController) GetContainerLog(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	svc := services.NewServices(ctx, a)
 	logs, err := svc.GetPodLog(param.Name, param.Namespace, param.Container, param.Tail)
 	if err != nil {
-		global.Logger.Error("获取 Pod 日志失败",
+		a.Logger.Error("获取 Pod 日志失败",
 			zap.String("namespace", param.Namespace),
 			zap.String("pod", param.Name),
 			zap.String("container", param.Container),

@@ -1,10 +1,11 @@
 package event
 
 import (
+	"k8soperation/internal/app/models"
+
 	corev1 "k8s.io/api/core/v1"
 	eventsv1 "k8s.io/api/events/v1"
 	"k8s.io/apimachinery/pkg/fields"
-	"k8soperation/internal/app/models"
 )
 
 // 组装 fieldSelector：新版/旧版分别构造
@@ -17,7 +18,7 @@ func BuildFieldSelectorEventsV1(kind, name, typ, reason string) string {
 		sels = append(sels, fields.OneTermEqualSelector("regarding.name", name))
 	}
 	if typ != "" {
-		sels = append(sels, fields.OneTermEqualSelector("type", typ))
+		sels = append(sels, fields.OneTermEqualSelector("types", typ))
 	}
 	if reason != "" {
 		sels = append(sels, fields.OneTermEqualSelector("reason", reason))
@@ -37,7 +38,7 @@ func BuildFieldSelectorCoreV1(kind, name, typ, reason string) string {
 		sels = append(sels, fields.OneTermEqualSelector("involvedObject.name", name))
 	}
 	if typ != "" {
-		sels = append(sels, fields.OneTermEqualSelector("type", typ))
+		sels = append(sels, fields.OneTermEqualSelector("types", typ))
 	}
 	if reason != "" {
 		sels = append(sels, fields.OneTermEqualSelector("reason", reason))

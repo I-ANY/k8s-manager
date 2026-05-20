@@ -6,11 +6,11 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
-func ScaleDeployment(namespace, name string, replicas int32) error {
+func ScaleDeployment(client *k8s.Client, namespace, name string, replicas int32) error {
 	if replicas < 0 {
 		return fmt.Errorf("replicas must be greater than 0")
 	}
@@ -19,7 +19,7 @@ func ScaleDeployment(namespace, name string, replicas int32) error {
 	defer cancel()
 
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		scale, getErr := global.KubeClient.AppsV1().
+		scale, getErr := client.Interface.AppsV1().
 			Deployments(namespace).
 			GetScale(ctx, name, metav1.GetOptions{})
 		if getErr != nil {
@@ -34,7 +34,7 @@ func ScaleDeployment(namespace, name string, replicas int32) error {
 
 		scale.Spec.Replicas = replicas
 
-		_, updateErr := global.KubeClient.AppsV1().
+		_, updateErr := client.Interface.AppsV1().
 			Deployments(namespace).
 			UpdateScale(ctx, name, scale, metav1.UpdateOptions{})
 		if updateErr != nil {

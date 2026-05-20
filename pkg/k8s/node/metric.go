@@ -10,10 +10,11 @@ import (
 	metricsclient "k8s.io/metrics/pkg/client/clientset/versioned"
 	"k8soperation/global"
 	"k8soperation/internal/app/models"
+	k8sclient "k8soperation/pkg/k8s"
 	"time"
 )
 
-func GetNodeMetrics(ctx context.Context, nodeName string) ([]models.NodeMetricItem, error) {
+func GetNodeMetrics(client *k8sclient.Client, ctx context.Context, nodeName string) ([]models.NodeMetricItem, error) {
 	// metrics client
 	mc, err := metricsclient.NewForConfig(global.KubeConfig)
 	if err != nil {
@@ -30,7 +31,7 @@ func GetNodeMetrics(ctx context.Context, nodeName string) ([]models.NodeMetricIt
 	node, err := global.KubeClient.CoreV1().Nodes().Get(ctx, nodeName, metav1.GetOptions{})
 	if err != nil {
 		// 容量拿不到不致命，给个告警但继续返回使用量
-		global.Logger.Warn("get node capacity failed", zap.String("nodeName", nodeName), zap.Error(err))
+		client.Log().Warn("get node capacity failed", zap.String("nodeName", nodeName), zap.Error(err))
 		node = &corev1.Node{}
 	}
 

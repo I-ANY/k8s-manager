@@ -6,15 +6,15 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
-func DeleteStatefulSetService(ctx context.Context, name, namespace string) error {
+func DeleteStatefulSetService(client *k8s.Client, ctx context.Context, name, namespace string) error {
 	c, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	err := global.KubeClient.CoreV1().
+	err := client.Interface.CoreV1().
 		Services(namespace).
 		Delete(c, name, metav1.DeleteOptions{})
 
@@ -38,7 +38,7 @@ func DeleteStatefulSetService(ctx context.Context, name, namespace string) error
 		10*time.Second,
 		true,
 		func(ctx context.Context) (bool, error) {
-			_, err := global.KubeClient.CoreV1().
+			_, err := client.Interface.CoreV1().
 				Services(namespace).
 				Get(ctx, name, metav1.GetOptions{})
 			if apierrors.IsNotFound(err) {

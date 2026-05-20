@@ -6,17 +6,17 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"sort"
 	"time"
 )
 
-func GetDeploymentReplicaSet(namespace, name string) ([]appv1.ReplicaSet, error) {
+func GetDeploymentReplicaSet(client *k8s.Client, namespace, name string) ([]appv1.ReplicaSet, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// 获取 指定 deployment 的详细信息
-	d, err := global.KubeClient.AppsV1().Deployments(namespace).Get(ctx, name, metav1.GetOptions{})
+	d, err := client.Interface.AppsV1().Deployments(namespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil, fmt.Errorf("deployment %s not found: %w", name, err)
@@ -32,7 +32,7 @@ func GetDeploymentReplicaSet(namespace, name string) ([]appv1.ReplicaSet, error)
 		selector = metav1.FormatLabelSelector(d.Spec.Selector)
 	}
 
-	rsList, err := global.KubeClient.AppsV1().ReplicaSets(namespace).List(ctx, metav1.ListOptions{LabelSelector: selector})
+	rsList, err := client.Interface.AppsV1().ReplicaSets(namespace).List(ctx, metav1.ListOptions{LabelSelector: selector})
 	if err != nil {
 		return nil, fmt.Errorf("list replicasets failed (ns=%s, selector=%q): %w", namespace, selector, err)
 	}

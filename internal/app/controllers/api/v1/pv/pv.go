@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/valid"
 )
@@ -36,11 +36,12 @@ func (ctl *KubePVController) Create(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	pv, err := svc.KubeCreatePV(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeCreatePV error", zap.Error(err))
+		a.Logger.Error("service.KubeCreatePV error", zap.Error(err))
 		return
 	}
 
@@ -75,11 +76,12 @@ func (ctl *KubePVController) List(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	items, total, err := svc.KubePVList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubePVList error", zap.Error(err))
+		a.Logger.Error("service.KubePVList error", zap.Error(err))
 		return
 	}
 
@@ -112,11 +114,12 @@ func (c *KubePVController) Detail(ctx *gin.Context) {
 	}
 
 	// 4 调用 Service
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	pvDetail, err := svc.KubePVDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubePVDetail error", zap.Error(err))
+		a.Logger.Error("service.KubePVDetail error", zap.Error(err))
 		return
 	}
 
@@ -150,10 +153,11 @@ func (ctl *KubePVController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubePVDelete(ctx.Request.Context(), param); err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubePVDelete error", zap.Error(err))
+		a.Logger.Error("service.KubePVDelete error", zap.Error(err))
 		return
 	}
 
@@ -180,11 +184,12 @@ func (c *KubePVController) Reclaim(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	updated, err := svc.KubePVReclaim(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubePVReclaim error", zap.Error(err))
+		a.Logger.Error("service.KubePVReclaim error", zap.Error(err))
 		return
 	}
 

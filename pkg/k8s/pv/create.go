@@ -8,9 +8,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8soperation/global"
 	"k8soperation/internal/app/requests"
+	k8sclient "k8soperation/pkg/k8s"
 )
 
-func CreatePersistentVolume(ctx context.Context, req *requests.KubePVCreateRequest) (*corev1.PersistentVolume, error) {
+func CreatePersistentVolume(client *k8sclient.Client, ctx context.Context, req *requests.KubePVCreateRequest) (*corev1.PersistentVolume, error) {
 	// 1) 构造 PV 对象
 	pv := BuildPersistentVolumeFromReq(req)
 
@@ -22,10 +23,10 @@ func CreatePersistentVolume(ctx context.Context, req *requests.KubePVCreateReque
 		if apierrors.IsAlreadyExists(err) {
 			return nil, fmt.Errorf("PersistentVolume %q already exists", pv.Name)
 		}
-		global.Logger.Errorf("create PersistentVolume failed: %v", err)
+		client.Log().Errorf("create PersistentVolume failed: %v", err)
 		return nil, err
 	}
 
-	global.Logger.Infof("PersistentVolume %q created successfully", created.Name)
+	client.Log().Infof("PersistentVolume %q created successfully", created.Name)
 	return created, nil
 }

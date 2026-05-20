@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/valid"
 )
@@ -37,11 +37,12 @@ func (ctl *KubeStorageClassController) Create(ctx *gin.Context) {
 	}
 
 	// 调用 Service
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	sc, err := svc.KubeCreateStorageClass(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeCreateStorageClass error", zap.Error(err))
+		a.Logger.Error("service.KubeCreateStorageClass error", zap.Error(err))
 		return
 	}
 
@@ -84,11 +85,12 @@ func (c *KubeStorageClassController) List(ctx *gin.Context) {
 	}
 
 	// 4. 调用 Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	storageClasses, total, err := svc.KubeStorageClassList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeStorageClassList error", zap.Error(err))
+		a.Logger.Error("service.KubeStorageClassList error", zap.Error(err))
 		return
 	}
 
@@ -121,11 +123,12 @@ func (c *KubeStorageClassController) Detail(ctx *gin.Context) {
 	}
 
 	// 调用 Service
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	sc, err := svc.KubeStorageClassDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeStorageClassDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeStorageClassDetail error", zap.Error(err))
 		return
 	}
 
@@ -164,9 +167,10 @@ func (c *KubeStorageClassController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeStorageClassDelete(ctx.Request.Context(), param); err != nil {
-		global.Logger.Error("service.KubeStorageClassDelete error", zap.Error(err))
+		a.Logger.Error("service.KubeStorageClassDelete error", zap.Error(err))
 		ctx.Error(err)
 		return
 	}

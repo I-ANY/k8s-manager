@@ -4,7 +4,7 @@ import (
 	"context"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"k8soperation/pkg/k8s/cell"
 	"k8soperation/pkg/k8s/dataselect"
 )
@@ -34,9 +34,9 @@ import (
 //
 //	[]corev1.Pod: Pod列表
 //	error: 错误信息
-func GetPodList(ctx context.Context, name, namespace string, page, limit int) ([]corev1.Pod, error) {
+func GetPodList(client *k8s.Client, ctx context.Context, name, namespace string, page, limit int) ([]corev1.Pod, error) {
 	// 1) 列表
-	list, err := global.KubeClient.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{})
+	list, err := client.Interface.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

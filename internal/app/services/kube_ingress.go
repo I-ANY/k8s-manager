@@ -7,7 +7,6 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/pkg/k8s/ingress"
 	"time"
@@ -21,13 +20,13 @@ func (s *Services) KubeIngressCreate(ctx context.Context, req *requests.KubeIngr
 	ing, err := ingress.CreateIngress(c, req)
 	if err != nil {
 		if apierrors.IsAlreadyExists(err) {
-			global.Logger.Warnf("ingress %s/%s already exists", req.Namespace, req.Name)
+			s.App().Logger.Warnf("ingress %s/%s already exists", req.Namespace, req.Name)
 			return nil, fmt.Errorf("ingress %q already exists in namespace %q", req.Name, req.Namespace)
 		}
 		return nil, fmt.Errorf("create ingress failed: %w", err)
 	}
 
-	global.Logger.Infof("ingress %s/%s created successfully", ing.Namespace, ing.Name)
+	s.App().Logger.Infof("ingress %s/%s created successfully", ing.Namespace, ing.Name)
 	return ing, nil
 }
 
@@ -60,7 +59,7 @@ func (s *Services) KubeIngressPatchJSON(ctx context.Context, req *requests.KubeI
 	ing.Namespace = req.Namespace
 
 	// Step 2: 获取旧对象，继承 ResourceVersion
-	old, err := global.KubeClient.NetworkingV1().
+	old, err := s.App().KubeClient.NetworkingV1().
 		Ingresses(req.Namespace).
 		Get(c, ing.Name, metav1.GetOptions{})
 	if err != nil {
@@ -74,14 +73,14 @@ func (s *Services) KubeIngressPatchJSON(ctx context.Context, req *requests.KubeI
 	ing.ManagedFields = nil
 
 	// Step 4: 执行全量覆盖更新（PUT）
-	updated, err := global.KubeClient.NetworkingV1().
+	updated, err := s.App().KubeClient.NetworkingV1().
 		Ingresses(req.Namespace).
 		Update(c, &ing, metav1.UpdateOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("更新 Ingress 失败: %w", err)
 	}
 
-	global.Logger.Infof("Ingress [%s] 在命名空间 [%s] 更新成功 (rv=%s)",
+	s.App().Logger.Infof("Ingress [%s] 在命名空间 [%s] 更新成功 (rv=%s)",
 		updated.Name, updated.Namespace, updated.ResourceVersion)
 
 	return updated, nil

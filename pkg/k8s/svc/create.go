@@ -6,8 +6,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
@@ -17,7 +17,7 @@ import (
  * @param req 创建Service的请求参数，包含Service的配置信息
  * @return 创建成功的Service对象和可能的错误
  */
-func CreateService(ctx context.Context, req *requests.KubeServiceCreateRequest) (*corev1.Service, error) {
+func CreateService(client *k8s.Client, ctx context.Context, req *requests.KubeServiceCreateRequest) (*corev1.Service, error) {
 	// 设置10秒的超时时间，确保请求不会无限期等待
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel() // 确保函数返回前取消上下文，释放资源
@@ -26,7 +26,7 @@ func CreateService(ctx context.Context, req *requests.KubeServiceCreateRequest) 
 	svc := BuildServiceFromSvcReq(req)
 
 	// 调用Kubernetes API创建Service
-	createdSvc, err := global.KubeClient.CoreV1().
+	createdSvc, err := client.Interface.CoreV1().
 		Services(req.Namespace).
 		Create(ctx, svc, metav1.CreateOptions{})
 	// 处理可能的错误
@@ -36,11 +36,11 @@ func CreateService(ctx context.Context, req *requests.KubeServiceCreateRequest) 
 			return nil, fmt.Errorf("service %q already exists in namespace %q", svc.Name, svc.Namespace)
 		}
 		// 记录创建失败的错误日志
-		global.Logger.Errorf("create service failed: %v", err)
+		client.Logger.Errorf("create service failed: %v", err)
 		return nil, err
 	}
 
 	// 记录Service创建成功的日志
-	global.Logger.Infof("service %q created successfully", createdSvc.Name)
+	client.Logger.Infof("service %q created successfully", createdSvc.Name)
 	return createdSvc, nil
 }

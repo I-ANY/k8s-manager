@@ -5,12 +5,12 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
 // DeleteIngress 删除 Ingress（前台级联 + 轮询确认消失）
-func DeleteIngress(ctx context.Context, name, namespace string) error {
+func DeleteIngress(client *k8s.Client, ctx context.Context, name, namespace string) error {
 	// 统一超时/取消
 	c, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
@@ -20,7 +20,7 @@ func DeleteIngress(ctx context.Context, name, namespace string) error {
 	opts := metav1.DeleteOptions{PropagationPolicy: &fg}
 
 	// 发起删除
-	if err := global.KubeClient.NetworkingV1().
+	if err := client.Interface.NetworkingV1().
 		Ingresses(namespace).
 		Delete(c, name, opts); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -36,7 +36,7 @@ func DeleteIngress(ctx context.Context, name, namespace string) error {
 		30*time.Second, // timeout（通常与 context 超时一致）
 		true,           // immediate：先立即检查一次
 		func(ctx context.Context) (done bool, err error) {
-			_, err = global.KubeClient.NetworkingV1().
+			_, err = client.Interface.NetworkingV1().
 				Ingresses(namespace).
 				Get(ctx, name, metav1.GetOptions{})
 			if apierrors.IsNotFound(err) {

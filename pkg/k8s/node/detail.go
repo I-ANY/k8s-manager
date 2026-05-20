@@ -8,19 +8,20 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8soperation/global"
+	k8sclient "k8soperation/pkg/k8s"
 )
 
 // GetNodeDetail 获取 Node 详情（集群级资源）
-func GetNodeDetail(ctx context.Context, name string) (*corev1.Node, error) {
+func GetNodeDetail(client *k8sclient.Client, ctx context.Context, name string) (*corev1.Node, error) {
 	nodeObj, err := global.KubeClient.CoreV1().
 		Nodes().
 		Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			global.Logger.Error("Node not found", zap.String("name", name))
+			client.Log().Error("Node not found", zap.String("name", name))
 			return nil, fmt.Errorf("Node %q not found", name)
 		}
-		global.Logger.Error("get Node failed", zap.String("name", name), zap.Error(err))
+		client.Log().Error("get Node failed", zap.String("name", name), zap.Error(err))
 		return nil, err
 	}
 	return nodeObj, nil

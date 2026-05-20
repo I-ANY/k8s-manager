@@ -4,12 +4,12 @@ import (
 	"context"
 	appv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"k8soperation/pkg/k8s/dataselect"
 	"time"
 )
 
-func GetSatefulSetList(ctx context.Context, name, namespace string, page, limit int) ([]appv1.StatefulSet, int, error) {
+func GetSatefulSetList(client *k8s.Client, ctx context.Context, name, namespace string, page, limit int) ([]appv1.StatefulSet, int, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -20,7 +20,7 @@ func GetSatefulSetList(ctx context.Context, name, namespace string, page, limit 
 		limit = 10
 	}
 
-	list, err := global.KubeClient.AppsV1().StatefulSets(namespace).List(ctx, metav1.ListOptions{})
+	list, err := client.Interface.AppsV1().StatefulSets(namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, 0, err
 	}

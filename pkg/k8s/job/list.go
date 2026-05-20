@@ -4,12 +4,12 @@ import (
 	"context"
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"k8soperation/pkg/k8s/dataselect"
 	"time"
 )
 
-func GetJobList(ctx context.Context, name, namespace string, page, limit int) ([]batchv1.Job, int, error) {
+func GetJobList(client *k8s.Client, ctx context.Context, name, namespace string, page, limit int) ([]batchv1.Job, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -20,7 +20,7 @@ func GetJobList(ctx context.Context, name, namespace string, page, limit int) ([
 		limit = 10
 	}
 
-	list, err := global.KubeClient.BatchV1().
+	list, err := client.Interface.BatchV1().
 		Jobs(namespace).
 		List(ctx, metav1.ListOptions{})
 	if err != nil {

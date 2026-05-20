@@ -8,10 +8,11 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8soperation/global"
+	k8sclient "k8soperation/pkg/k8s"
 )
 
 // GetPVCDetail 获取 PersistentVolumeClaim 详情
-func GetPVCDetail(ctx context.Context, namespace, name string) (*corev1.PersistentVolumeClaim, error) {
+func GetPVCDetail(client *k8sclient.Client, ctx context.Context, namespace, name string) (*corev1.PersistentVolumeClaim, error) {
 	// 调用 K8s API 获取 PVC（需要 namespace）
 	pvc, err := global.KubeClient.CoreV1().
 		PersistentVolumeClaims(namespace).
@@ -19,7 +20,7 @@ func GetPVCDetail(ctx context.Context, namespace, name string) (*corev1.Persiste
 	if err != nil {
 		// 资源不存在
 		if apierrors.IsNotFound(err) {
-			global.Logger.Error("PersistentVolumeClaim not found",
+			client.Log().Error("PersistentVolumeClaim not found",
 				zap.String("namespace", namespace),
 				zap.String("name", name),
 			)
@@ -27,7 +28,7 @@ func GetPVCDetail(ctx context.Context, namespace, name string) (*corev1.Persiste
 		}
 
 		// 其他错误
-		global.Logger.Error("get PersistentVolumeClaim failed",
+		client.Log().Error("get PersistentVolumeClaim failed",
 			zap.String("namespace", namespace),
 			zap.String("name", name),
 			zap.Error(err),

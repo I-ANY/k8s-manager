@@ -5,7 +5,6 @@ import (
 	"fmt"
 	batchv1 "k8s.io/api/batch/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/pkg/k8s/cronjob"
 	"time"
@@ -16,16 +15,16 @@ func (s *Services) KubeCronJobCreate(ctx context.Context, req *requests.KubeCron
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	cronJobObj, err := cronjob.CreateCronJob(ctx, req)
+	cronJobObj, err := cronjob.CreateCronJob(s.App().K8sClient(), ctx, req)
 	if err != nil {
 		if apierrors.IsAlreadyExists(err) {
-			global.Logger.Warnf("cronjob %s/%s already exists", req.Namespace, req.Name)
+			s.App().Logger.Warnf("cronjob %s/%s already exists", req.Namespace, req.Name)
 			return nil, fmt.Errorf("cronjob %q already exists in namespace %q", req.Name, req.Namespace)
 		}
 		return nil, fmt.Errorf("create cronjob failed: %w", err)
 	}
 
-	global.Logger.Infof("cronjob %s/%s created successfully", req.Namespace, cronJobObj.Name)
+	s.App().Logger.Infof("cronjob %s/%s created successfully", req.Namespace, cronJobObj.Name)
 	return cronJobObj, nil
 }
 
@@ -47,5 +46,5 @@ func (s *Services) KubeCronJobDelete(ctx context.Context, param *requests.KubeCr
 
 // KubeCronJobSuspend 暂停和恢复
 func (s *Services) KubeCronJobSuspend(ctx context.Context, param *requests.KubeCronJobSuspendRequest) error {
-	return cronjob.SetCronJobSuspend(ctx, param.Namespace, param.Name, param.Suspend)
+	return cronjob.SetCronJobSuspend(s.App().K8sClient(), ctx, param.Namespace, param.Name, param.Suspend)
 }

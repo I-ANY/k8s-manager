@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/pkg/k8s/configmap"
 	"k8soperation/pkg/k8s/secret"
 	"time"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (s *Services) KubeCreateSecret(ctx context.Context,
@@ -51,8 +51,8 @@ func (s *Services) KubeSecretUpdate(ctx context.Context, req *requests.KubeSecre
 	}
 	sec.Namespace = req.Namespace
 
-	// 为了 Update 成功：拿旧对象的 resourceVersion（以及必要时沿用 type）
-	old, err := global.KubeClient.CoreV1().Secrets(req.Namespace).Get(c, sec.Name, metav1.GetOptions{})
+	// 为了 Update 成功：拿旧对象的 resourceVersion（以及必要时沿用 types）
+	old, err := s.App().KubeClient.CoreV1().Secrets(req.Namespace).Get(c, sec.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("获取原 Secret 失败: %w", err)
 	}
@@ -64,7 +64,7 @@ func (s *Services) KubeSecretUpdate(ctx context.Context, req *requests.KubeSecre
 	}
 
 	// 全量覆盖
-	updated, err := global.KubeClient.CoreV1().Secrets(req.Namespace).Update(c, &sec, metav1.UpdateOptions{})
+	updated, err := s.App().KubeClient.CoreV1().Secrets(req.Namespace).Update(c, &sec, metav1.UpdateOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("更新 Secret 失败: %w", err)
 	}
@@ -101,7 +101,7 @@ func (s *Services) KubeConfigMapUpdate(
 	cm.Namespace = req.Namespace
 
 	// 为了 Update 成功：拿旧对象的 ResourceVersion（防止冲突）
-	old, err := global.KubeClient.CoreV1().
+	old, err := s.App().KubeClient.CoreV1().
 		ConfigMaps(req.Namespace).
 		Get(c, cm.Name, metav1.GetOptions{})
 	if err != nil {
@@ -112,7 +112,7 @@ func (s *Services) KubeConfigMapUpdate(
 	}
 
 	// 执行全量覆盖
-	updated, err := global.KubeClient.CoreV1().
+	updated, err := s.App().KubeClient.CoreV1().
 		ConfigMaps(req.Namespace).
 		Update(c, &cm, metav1.UpdateOptions{})
 	if err != nil {

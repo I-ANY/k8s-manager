@@ -44,11 +44,9 @@ func WithLevel(level string) Level {
 }
 
 type Logger struct {
-	logger                 *zap.Logger
-	sugar                  *zap.SugaredLogger
-	level                  Level
-	BusinessLogFileName    string
-	MirrorBusinessToSystem bool
+	logger *zap.Logger
+	sugar  *zap.SugaredLogger
+	level  Level
 }
 
 type RotateOptions struct {
@@ -67,16 +65,34 @@ var (
 	AddCallerSkip = zap.AddCallerSkip
 )
 
-func NewLogger(level zapcore.Level, ropt RotateOptions, options ...Option) *Logger {
-	// 确保日志目录存在
-	if ropt.FileName != "" {
-		_ = os.MkdirAll(filepath.Dir(ropt.FileName), 0o755)
-	}
-
+func newEncoderConfig() zapcore.EncoderConfig {
 	encCfg := zap.NewProductionEncoderConfig()
 	encCfg.TimeKey = "time"
 	encCfg.EncodeTime = func(t time.Time, pae zapcore.PrimitiveArrayEncoder) {
 		pae.AppendString(t.Format("2006-01-02 15:04:05"))
+	}
+	return encCfg
+}
+
+func NewBootstrapLogger(options ...Option) *Logger {
+	base := zap.New(
+		zapcore.NewCore(
+			zapcore.NewJSONEncoder(newEncoderConfig()),
+			zapcore.AddSync(os.Stdout),
+			InfoLevel,
+		),
+		options...,
+	)
+	return &Logger{
+		logger: base,
+		sugar:  base.Sugar(),
+		level:  InfoLevel,
+	}
+}
+
+func NewLogger(level zapcore.Level, ropt RotateOptions, options ...Option) *Logger {
+	if ropt.FileName != "" {
+		_ = os.MkdirAll(filepath.Dir(ropt.FileName), 0o755)
 	}
 
 	fileWriter := zapcore.AddSync(&lumberjack.Logger{
@@ -89,50 +105,28 @@ func NewLogger(level zapcore.Level, ropt RotateOptions, options ...Option) *Logg
 	consoleWriter := zapcore.AddSync(os.Stdout)
 	ws := zapcore.NewMultiWriteSyncer(fileWriter, consoleWriter)
 
-	core := zapcore.NewCore(zapcore.NewJSONEncoder(encCfg), ws, level)
-
-	// ✅ 先构造 base，再拿 Sugar
-	base := zap.New(core, append(options, AddCaller(), AddCallerSkip(1))...)
+	base := zap.New(zapcore.NewCore(zapcore.NewJSONEncoder(newEncoderConfig()), ws, level), options...)
 	return &Logger{
 		logger: base,
-		sugar:  base.Sugar(), // ✅ 一定要赋值
+		sugar:  base.Sugar(),
 		level:  level,
 	}
 }
 
-func (l *Logger) Logger() *zap.Logger    { return l.logger }
 func (l *Logger) StdLogger() *log.Logger { return zap.NewStdLog(l.logger) }
 
-// —— 兜底，避免 sugar 为空再次 panic —— //
-func (l *Logger) sugarSafe() *zap.SugaredLogger {
-	if l == nil {
-		return zap.S()
-	}
-	if l.sugar == nil {
-		if l.logger != nil {
-			l.sugar = l.logger.Sugar()
-		} else {
-			return zap.S()
-		}
-	}
-	return l.sugar
-}
-
-// 结构化日志
 func (l *Logger) Debug(msg string, fields ...zap.Field) { l.logger.Debug(msg, fields...) }
 func (l *Logger) Info(msg string, fields ...zap.Field)  { l.logger.Info(msg, fields...) }
 func (l *Logger) Warn(msg string, fields ...zap.Field)  { l.logger.Warn(msg, fields...) }
 func (l *Logger) Error(msg string, fields ...zap.Field) { l.logger.Error(msg, fields...) }
 func (l *Logger) Fatal(msg string, fields ...zap.Field) { l.logger.Fatal(msg, fields...) }
 
-// printf 风格（✅ 用 sugarSafe）
-func (l *Logger) Debugf(format string, args ...any) { l.sugarSafe().Debugf(format, args...) }
-func (l *Logger) Infof(format string, args ...any)  { l.sugarSafe().Infof(format, args...) }
-func (l *Logger) Warnf(format string, args ...any)  { l.sugarSafe().Warnf(format, args...) }
-func (l *Logger) Errorf(format string, args ...any) { l.sugarSafe().Errorf(format, args...) }
-func (l *Logger) Fatalf(format string, args ...any) { l.sugarSafe().Fatalf(format, args...) }
+func (l *Logger) Debugf(format string, args ...any) { l.sugar.Debugf(format, args...) }
+func (l *Logger) Infof(format string, args ...any)  { l.sugar.Infof(format, args...) }
+func (l *Logger) Warnf(format string, args ...any)  { l.sugar.Warnf(format, args...) }
+func (l *Logger) Errorf(format string, args ...any) { l.sugar.Errorf(format, args...) }
+func (l *Logger) Fatalf(format string, args ...any) { l.sugar.Fatalf(format, args...) }
 
-// Windows 上 zap.Sync 偶尔返回 "invalid argument" —— 忽略之
 func (l *Logger) Sync() error {
 	if l == nil || l.logger == nil {
 		return nil

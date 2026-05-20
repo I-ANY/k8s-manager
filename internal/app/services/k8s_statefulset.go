@@ -7,7 +7,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/pkg/k8s/statefulset"
 	"time"
@@ -26,11 +25,11 @@ func (s *Services) KubeStatefulSetCreate(ctx context.Context, req *requests.Kube
 			return nil, fmt.Errorf("namespace %q not found: %w", req.Namespace, err)
 		}
 		// 其他错误：原样抛出（可保留一条 warn 日志，避免重复打 warn+error）
-		global.Logger.Warnf("[StatefulSet] create failed %s/%s: %v", req.Namespace, req.Name, err)
+		s.App().Logger.Warnf("[StatefulSet] create failed %s/%s: %v", req.Namespace, req.Name, err)
 		return nil, err
 	}
 
-	global.Logger.Infof("[StatefulSet] %s/%s created successfully", req.Namespace, req.Name)
+	s.App().Logger.Infof("[StatefulSet] %s/%s created successfully", req.Namespace, req.Name)
 	return sts, nil
 }
 
@@ -45,7 +44,7 @@ func (s *Services) KubeStatefulSetCreateService(ctx context.Context,
 	if err != nil {
 		return nil, nil, fmt.Errorf("create statefulset failed: %w", err)
 	}
-	global.Logger.Infof("statefulset %s/%s created successfully", req.Namespace, req.Name)
+	s.App().Logger.Infof("statefulset %s/%s created successfully", req.Namespace, req.Name)
 
 	// 按需创建 Service
 	var svcObj *corev1.Service
@@ -54,24 +53,24 @@ func (s *Services) KubeStatefulSetCreateService(ctx context.Context,
 		if err != nil {
 			// 已存在直接复用
 			if apierrors.IsAlreadyExists(err) {
-				exist, err := global.KubeClient.CoreV1().
+				exist, err := s.App().KubeClient.CoreV1().
 					Services(req.Namespace).
 					Get(ctx, req.ServiceName, metav1.GetOptions{})
 				if err == nil {
-					global.Logger.Infof("service %s/%s already exists, reuse it", req.Namespace, req.ServiceName)
+					s.App().Logger.Infof("service %s/%s already exists, reuse it", req.Namespace, req.ServiceName)
 					return sts, exist, nil
 				}
 			}
 
 			// 真正失败 → 回滚删除 STS
 			pol := metav1.DeletePropagationForeground
-			_ = global.KubeClient.AppsV1().
+			_ = s.App().KubeClient.AppsV1().
 				StatefulSets(req.Namespace).
 				Delete(ctx, sts.Name, metav1.DeleteOptions{PropagationPolicy: &pol})
-			global.Logger.Errorf("rollback delete statefulset %s/%s after service failed: %v", req.Namespace, req.Name, err)
+			s.App().Logger.Errorf("rollback delete statefulset %s/%s after service failed: %v", req.Namespace, req.Name, err)
 			return nil, nil, fmt.Errorf("create headless service failed: %w", err)
 		}
-		global.Logger.Infof("headless service %s/%s created successfully", req.Namespace, req.ServiceName)
+		s.App().Logger.Infof("headless service %s/%s created successfully", req.Namespace, req.ServiceName)
 	}
 
 	return sts, svcObj, nil

@@ -7,15 +7,15 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
-func RollbackDeployment(name, namespace, rsName string) (*appv1.Deployment, error) {
+func RollbackDeployment(client *k8s.Client, name, namespace, rsName string) (*appv1.Deployment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if _, err := global.KubeClient.AppsV1().Deployments(namespace).Get(ctx, name, metav1.GetOptions{}); err != nil {
+	if _, err := client.Interface.AppsV1().Deployments(namespace).Get(ctx, name, metav1.GetOptions{}); err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil, fmt.Errorf("deployment %s/%s not found: %w", namespace, name, err)
 		}
@@ -45,7 +45,7 @@ func RollbackDeployment(name, namespace, rsName string) (*appv1.Deployment, erro
 		cctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		cur, getErr := global.KubeClient.AppsV1().Deployments(namespace).Get(cctx, name, metav1.GetOptions{})
+		cur, getErr := client.Interface.AppsV1().Deployments(namespace).Get(cctx, name, metav1.GetOptions{})
 		if getErr != nil {
 			return fmt.Errorf("get deployment %s/%s failed: %w", namespace, name, getErr)
 		}
@@ -60,7 +60,7 @@ func RollbackDeployment(name, namespace, rsName string) (*appv1.Deployment, erro
 		cur.Annotations["rollback.at"] = time.Now().Format(time.RFC3339)
 
 		var updateErr error
-		updated, updateErr = global.KubeClient.AppsV1().Deployments(namespace).Update(cctx, cur, metav1.UpdateOptions{})
+		updated, updateErr = client.Interface.AppsV1().Deployments(namespace).Update(cctx, cur, metav1.UpdateOptions{})
 		if updateErr != nil {
 			return fmt.Errorf("update deployment %s/%s failed: %w", namespace, name, updateErr)
 		}

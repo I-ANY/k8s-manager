@@ -243,7 +243,7 @@ func BuildJobResponse(job *batchv1.Job, req *requests.KubeJobCreateRequest) gin.
 		conds := make([]gin.H, 0, len(job.Status.Conditions))
 		for _, c := range job.Status.Conditions {
 			conds = append(conds, gin.H{
-				"type":               string(c.Type),
+				"types":              string(c.Type),
 				"status":             string(c.Status),
 				"lastTransitionTime": c.LastTransitionTime.Time,
 				"reason":             c.Reason,

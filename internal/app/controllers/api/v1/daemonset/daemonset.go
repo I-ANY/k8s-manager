@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/k8s/daemonset"
 	"k8soperation/pkg/valid"
@@ -41,11 +41,12 @@ func (c *KubeDaemonSetController) Create(ctx *gin.Context) {
 	}
 
 	// 调用 Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	ds, svcObj, err := svc.KubeDaemonSetCreate(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDaemonSetCreate error", zap.Error(err))
+		a.Logger.Error("service.KubeDaemonSetCreate error", zap.Error(err))
 		return
 	}
 
@@ -76,11 +77,12 @@ func (c *KubeDaemonSetController) List(ctx *gin.Context) {
 	}
 
 	// 2) 调用 Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	daemonsets, total, err := svc.KubeDaemonSetList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDaemonSetList error", zap.Error(err))
+		a.Logger.Error("service.KubeDaemonSetList error", zap.Error(err))
 		return
 	}
 
@@ -107,11 +109,12 @@ func (c *KubeDaemonSetController) Detail(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeDaemonSetDetailRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	ds, err := svc.KubeDaemonSetDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDaemonSetDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeDaemonSetDetail error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{
@@ -138,9 +141,10 @@ func (c *KubeDaemonSetController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeDaemonSetDelete(ctx.Request.Context(), param); err != nil {
-		global.Logger.Error("service.KubeDaemonSetDelete error", zap.Error(err))
+		a.Logger.Error("service.KubeDaemonSetDelete error", zap.Error(err))
 		ctx.Error(err)
 		return
 	}
@@ -172,9 +176,10 @@ func (c *KubeDaemonSetController) DeleteService(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeDaemonSetDeleteService(ctx.Request.Context(), param); err != nil {
-		global.Logger.Error("service.KubeDaemonSetDeleteService error", zap.Error(err))
+		a.Logger.Error("service.KubeDaemonSetDeleteService error", zap.Error(err))
 		ctx.Error(err)
 		return
 	}
@@ -203,11 +208,12 @@ func (c *KubeDaemonSetController) UpdateImage(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeDaemonSetUpdateImageRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	ds, err := svc.KubeDaemonSetUpdateImage(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDaemonSetUpdateImage error", zap.Error(err))
+		a.Logger.Error("service.KubeDaemonSetUpdateImage error", zap.Error(err))
 		return
 
 	}
@@ -238,11 +244,12 @@ func (c *KubeDaemonSetController) Restart(context *gin.Context) {
 	if ok := valid.Validate(context, param, requests.ValidKubeDaemonSetRestartRequest); !ok {
 		return
 	}
-	svc := services.NewServices(context)
+	a := appctx.FromContext(context)
+	svc := services.NewServices(context, a)
 	err := svc.KubeDaemonSetRestart(context.Request.Context(), param)
 	if err != nil {
 		context.Error(err)
-		global.Logger.Error("service.KubeDaemonSetRestart error", zap.Error(err))
+		a.Logger.Error("service.KubeDaemonSetRestart error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{
@@ -269,11 +276,12 @@ func (c *KubeDaemonSetController) Rollback(context *gin.Context) {
 	if ok := valid.Validate(context, param, requests.ValidKubeDaemonSetRollbackRequest); !ok {
 		return
 	}
-	svc := services.NewServices(context)
+	a := appctx.FromContext(context)
+	svc := services.NewServices(context, a)
 	_, err := svc.KubeDaemonSetRollback(context.Request.Context(), param)
 	if err != nil {
 		context.Error(err)
-		global.Logger.Error("service.KubeDaemonSetRollback error", zap.Error(err))
+		a.Logger.Error("service.KubeDaemonSetRollback error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{

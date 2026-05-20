@@ -12,10 +12,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 
-	"github.com/gin-gonic/gin"
 	"k8soperation/internal/app/requests"
 	"k8soperation/pkg/k8s/dataselect"
 	"k8soperation/pkg/k8s/probe"
+
+	"github.com/gin-gonic/gin"
 )
 
 // 描述注解与系统关键标签
@@ -262,7 +263,7 @@ func BuildStatefulSetResponse(sts *appv1.StatefulSet, svc *corev1.Service, req *
 		svcData := gin.H{
 			"created":  true,
 			"name":     svc.Name,
-			"type":     string(svc.Spec.Type),
+			"types":    string(svc.Spec.Type),
 			"ports":    svc.Spec.Ports,
 			"selector": svc.Spec.Selector,
 		}

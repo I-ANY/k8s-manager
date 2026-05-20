@@ -55,9 +55,10 @@ func NewBusinessLogger(ropt RotateOptions, options ...Option) *Logger {
 		}),
 	)
 
-	// 5. 返回自定义 Logger 封装（内部持有 zap.Logger）
+	base := zap.New(core, options...)
 	return &Logger{
-		logger: zap.New(core, options...), // 真正的 zap.Logger
-		level:  InfoLevel,                 // 保存当前日志等级（仅 Info）
+		logger: base,
+		sugar:  base.Sugar(),
+		level:  InfoLevel,
 	}
 }

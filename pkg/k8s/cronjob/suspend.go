@@ -8,9 +8,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8soperation/global"
+	k8sclient "k8soperation/pkg/k8s"
 )
 
-func SetCronJobSuspend(ctx context.Context, namespace, name string, suspend bool) error {
+func SetCronJobSuspend(client *k8sclient.Client, ctx context.Context, namespace, name string, suspend bool) error {
 	patchData := map[string]interface{}{
 		"spec": map[string]interface{}{
 			"suspend": suspend,
@@ -39,6 +40,6 @@ func SetCronJobSuspend(ctx context.Context, namespace, name string, suspend bool
 	if !suspend {
 		action = "resumed"
 	}
-	global.Logger.Infof("CronJob %q in namespace %q %s successfully", name, namespace, action)
+	client.Log().Infof("CronJob %q in namespace %q %s successfully", name, namespace, action)
 	return nil
 }

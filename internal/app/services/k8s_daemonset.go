@@ -7,7 +7,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/pkg/k8s/daemonset"
 	"strings"
@@ -36,10 +35,10 @@ func (s *Services) KubeDaemonSetCreate(ctx context.Context, req *requests.KubeDa
 				if svcName == "" {
 					svcName = req.Name
 				}
-				if exist, gerr := global.KubeClient.CoreV1().
+				if exist, gerr := s.App().KubeClient.CoreV1().
 					Services(req.Namespace).
 					Get(ctx, svcName, metav1.GetOptions{}); gerr == nil {
-					global.Logger.Infof("service %s/%s already exists, reuse it", req.Namespace, svcName)
+					s.App().Logger.Infof("service %s/%s already exists, reuse it", req.Namespace, svcName)
 					return ds, exist, nil
 				}
 				// Get 失败才继续回滚
@@ -47,10 +46,10 @@ func (s *Services) KubeDaemonSetCreate(ctx context.Context, req *requests.KubeDa
 
 			// Service 真失败 → 回滚删除 DaemonSet（带传播策略，清理 Pods）
 			pol := metav1.DeletePropagationForeground // 或 Background
-			if delErr := global.KubeClient.AppsV1().
+			if delErr := s.App().KubeClient.AppsV1().
 				DaemonSets(req.Namespace).
 				Delete(ctx, ds.Name, metav1.DeleteOptions{PropagationPolicy: &pol}); delErr != nil {
-				global.Logger.Errorf("rollback delete daemonset %s/%s failed: %v", req.Namespace, ds.Name, delErr)
+				s.App().Logger.Errorf("rollback delete daemonset %s/%s failed: %v", req.Namespace, ds.Name, delErr)
 			}
 			return nil, nil, fmt.Errorf("create service failed: %w", err)
 		}

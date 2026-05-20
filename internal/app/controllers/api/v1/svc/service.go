@@ -2,14 +2,15 @@ package svc
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	svc_service "k8soperation/pkg/k8s/svc"
 	"k8soperation/pkg/valid"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type KubeServiceController struct {
@@ -40,7 +41,8 @@ func (ctl *KubeServiceController) Create(ctx *gin.Context) {
 	}
 
 	// 调用 Services
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 
 	// 如果你项目里已经实现了 (s *Services) KubeCreateService：
 	service, err := svc.KubeCreateService(ctx.Request.Context(), req)
@@ -50,7 +52,7 @@ func (ctl *KubeServiceController) Create(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.Error(err) // 交给全局中间件/Logger
-		global.Logger.Error("service.KubeCreateService error", zap.Error(err))
+		a.Logger.Error("service.KubeCreateService error", zap.Error(err))
 		return
 	}
 
@@ -58,7 +60,7 @@ func (ctl *KubeServiceController) Create(ctx *gin.Context) {
 	r.Success(gin.H{
 		"name":        service.Name,              // Service 名称
 		"namespace":   service.Namespace,         // 命名空间
-		"type":        service.Spec.Type,         // ClusterIP / NodePort / LoadBalancer
+		"types":       service.Spec.Type,         // ClusterIP / NodePort / LoadBalancer
 		"cluster_ip":  service.Spec.ClusterIP,    // 集群 IP（Headless 时为 "None"）
 		"external_ip": service.Spec.ExternalName, // ExternalName 类型时显示
 		"ports":       service.Spec.Ports,        // 暴露的端口列表
@@ -92,11 +94,12 @@ func (c *KubeServiceController) List(ctx *gin.Context) {
 	}
 
 	// 调用 Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	servicesList, total, err := svc.KubeServiceList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeServiceList error", zap.Error(err))
+		a.Logger.Error("service.KubeServiceList error", zap.Error(err))
 		return
 	}
 
@@ -130,11 +133,12 @@ func (c *KubeServiceController) Detail(ctx *gin.Context) {
 	}
 
 	// 调用业务逻辑层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	svcDetail, err := svc.KubeServiceDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeServiceDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeServiceDetail error", zap.Error(err))
 		return
 	}
 
@@ -165,9 +169,10 @@ func (c *KubeServiceController) Delete(ctx *gin.Context) {
 	}
 
 	// 调用 Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeServiceDelete(ctx.Request.Context(), param); err != nil {
-		global.Logger.Error("service.KubeServiceDelete error", zap.Error(err))
+		a.Logger.Error("service.KubeServiceDelete error", zap.Error(err))
 		ctx.Error(err)
 		return
 	}
@@ -198,11 +203,12 @@ func (c *KubeServiceController) Patch(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, &param, nil); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	out, err := svc.KubeServicePatch(ctx.Request.Context(), &param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("KubeServicePatch error", zap.Error(err))
+		a.Logger.Error("KubeServicePatch error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{"message": "Service StrategicMergePatch 成功", "data": out})
@@ -226,11 +232,12 @@ func (c *KubeServiceController) PatchJSON(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, &param, nil); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	out, err := svc.KubeServicePatchJSON(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("KubeServicePatchJSON error", zap.Error(err))
+		a.Logger.Error("KubeServicePatchJSON error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{"message": "Service JSON Merge Patch 成功", "data": out})
@@ -251,7 +258,8 @@ func (c *KubeServiceController) GetEndpoints(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	ep, err := svc.KubeServiceEndpoints(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)

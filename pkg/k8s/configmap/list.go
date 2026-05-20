@@ -6,12 +6,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"k8soperation/pkg/k8s/dataselect"
 	"time"
 )
 
-func GetConfigMapList(ctx context.Context, name, namespace string, page, limit int) ([]corev1.ConfigMap, int, error) {
+func GetConfigMapList(client *k8s.Client, ctx context.Context, name, namespace string, page, limit int) ([]corev1.ConfigMap, int, error) {
 	// 超时上下文
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
@@ -25,7 +25,7 @@ func GetConfigMapList(ctx context.Context, name, namespace string, page, limit i
 	}
 
 	// 拉取 ConfigMap 列表
-	list, err := global.KubeClient.CoreV1().
+	list, err := client.Interface.CoreV1().
 		ConfigMaps(namespace).
 		List(ctx, metav1.ListOptions{})
 	if err != nil {

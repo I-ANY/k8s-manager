@@ -8,10 +8,11 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8soperation/global"
+	k8sclient "k8soperation/pkg/k8s"
 )
 
 // GetPVDetail 获取 PersistentVolume 详情
-func GetPVDetail(ctx context.Context, name string) (*corev1.PersistentVolume, error) {
+func GetPVDetail(client *k8sclient.Client, ctx context.Context, name string) (*corev1.PersistentVolume, error) {
 	// 调用 K8s API 获取 PV（集群级，不需要 namespace）
 	pv, err := global.KubeClient.CoreV1().
 		PersistentVolumes().
@@ -19,14 +20,14 @@ func GetPVDetail(ctx context.Context, name string) (*corev1.PersistentVolume, er
 	if err != nil {
 		// 资源不存在
 		if apierrors.IsNotFound(err) {
-			global.Logger.Error("PersistentVolume not found",
+			client.Log().Error("PersistentVolume not found",
 				zap.String("name", name),
 			)
 			return nil, fmt.Errorf("PersistentVolume %q not found", name)
 		}
 
 		// 其他错误
-		global.Logger.Error("get PersistentVolume failed",
+		client.Log().Error("get PersistentVolume failed",
 			zap.String("name", name),
 			zap.Error(err),
 		)

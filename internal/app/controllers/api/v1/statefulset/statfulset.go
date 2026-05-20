@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/utils"
 	"k8soperation/pkg/valid"
@@ -35,11 +35,12 @@ func (c *KubeStatefulSetController) Create(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, req, requests.ValidKubeStatefulSetCreateRequest); !ok {
 		return
 	}
-	service := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	service := services.NewServices(ctx, a)
 	sts, svc, err := service.KubeStatefulSetCreateService(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeStatefulSetCreate error", zap.Error(err))
+		a.Logger.Error("service.KubeStatefulSetCreate error", zap.Error(err))
 		return
 	}
 
@@ -69,11 +70,12 @@ func (c *KubeStatefulSetController) List(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, req, requests.ValidKubeStatefulSetListRequest); !ok {
 		return
 	}
-	service := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	service := services.NewServices(ctx, a)
 	sts, total, err := service.KubeStatefulSetList(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeStatefulSetList error", zap.Error(err))
+		a.Logger.Error("service.KubeStatefulSetList error", zap.Error(err))
 		return
 	}
 
@@ -102,11 +104,12 @@ func (c *KubeStatefulSetController) Detail(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeStatefulSetDetailRequest); !ok {
 		return
 	}
-	service := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	service := services.NewServices(ctx, a)
 	sts, err := service.KubeStatefulSetDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeStatefulSetDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeStatefulSetDetail error", zap.Error(err))
 	}
 
 	r.Success(gin.H{
@@ -133,7 +136,8 @@ func (c *KubeStatefulSetController) Scale(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeDeploymentScaleRequest); !ok {
 		return
 	}
-	service := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	service := services.NewServices(ctx, a)
 	sts, err := service.KubeStatefulSetPatchReplicas(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err) // 交给中间件
@@ -182,7 +186,8 @@ func (c *KubeStatefulSetController) UpdateImage(ctx *gin.Context) {
 	}
 
 	// 3) 调用服务
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	sts, err := svc.KubeStatefulSetPatchImage(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err) // 交给中间件统一处理
@@ -223,11 +228,12 @@ func (c *KubeStatefulSetController) Restart(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeStatefulSetRestartRequest); !ok {
 		return
 	}
-	service := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	service := services.NewServices(ctx, a)
 	sts, err := service.KubeStatefulSetRestart(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeStatefulSetRestart error", zap.Error(err))
+		a.Logger.Error("service.KubeStatefulSetRestart error", zap.Error(err))
 	}
 	r.Success(gin.H{
 		"namespace":   sts.Namespace,
@@ -257,7 +263,8 @@ func (c *KubeStatefulSetController) Delete(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeStatefulSetDeleteRequest); !ok {
 		return
 	}
-	service := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	service := services.NewServices(ctx, a)
 	err := service.KubeStatefulSetDelete(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
@@ -287,7 +294,8 @@ func (c *KubeStatefulSetController) DeleteService(context *gin.Context) {
 	if ok := valid.Validate(context, param, requests.ValidKubeStatefulSetDeleteRequest); !ok {
 		return
 	}
-	service := services.NewServices(context)
+	a := appctx.FromContext(context)
+	service := services.NewServices(context, a)
 	err := service.KubeStatefulSetDeleteService(context.Request.Context(), param)
 	if err != nil {
 		context.Error(err)

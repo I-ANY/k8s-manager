@@ -4,7 +4,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"k8soperation/global"
+	appctx "k8soperation/pkg/app"
 	"net/http"
 )
 
@@ -22,11 +22,12 @@ func NewAuthControllerLogout() *AuthControllerLogout {
 // @Produce json
 // @Success 200 {object} map[string]string
 // @Router /api/v1/auth/logout [post]
-func (a *AuthControllerLogout) Logout(ctx *gin.Context) {
+func (ac *AuthControllerLogout) Logout(ctx *gin.Context) {
+	a := appctx.FromContext(ctx)
 	sess := sessions.Default(ctx)
 
 	// 记录一下当前 SessionID（便于日志追踪；可能为空）
-	cookieName := global.CacheSetting.Name
+	cookieName := a.CacheSetting.Name
 	sessionID, _ := ctx.Cookie(cookieName)
 
 	// 清空会话内的数据
@@ -42,11 +43,11 @@ func (a *AuthControllerLogout) Logout(ctx *gin.Context) {
 	})
 
 	if err := sess.Save(); err != nil {
-		global.Logger.Error("logout failed", zap.String("sid", sessionID), zap.Error(err))
+		a.Logger.Error("logout failed", zap.String("sid", sessionID), zap.Error(err))
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "退出失败"})
 		return
 	}
 
-	global.Logger.Info("logout success" /*, zap.String("sid", sessionID)*/)
+	a.Logger.Info("logout success" /*, zap.String("sid", sessionID)*/)
 	ctx.JSON(http.StatusOK, gin.H{"msg": "退出成功"})
 }

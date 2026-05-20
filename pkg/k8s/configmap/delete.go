@@ -5,11 +5,11 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
-func DeleteConfigMap(ctx context.Context, name, namespace string) error {
+func DeleteConfigMap(client *k8s.Client, ctx context.Context, name, namespace string) error {
 	// 统一超时/取消
 	c, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
@@ -18,7 +18,7 @@ func DeleteConfigMap(ctx context.Context, name, namespace string) error {
 	fg := metav1.DeletePropagationForeground
 	opts := metav1.DeleteOptions{PropagationPolicy: &fg}
 
-	if err := global.KubeClient.CoreV1().
+	if err := client.Interface.CoreV1().
 		ConfigMaps(namespace).
 		Delete(c, name, opts); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -34,7 +34,7 @@ func DeleteConfigMap(ctx context.Context, name, namespace string) error {
 		30*time.Second, // timeout
 		true,           // immediate
 		func(ctx context.Context) (bool, error) {
-			_, err := global.KubeClient.CoreV1().
+			_, err := client.Interface.CoreV1().
 				ConfigMaps(namespace).
 				Get(ctx, name, metav1.GetOptions{})
 			if apierrors.IsNotFound(err) {

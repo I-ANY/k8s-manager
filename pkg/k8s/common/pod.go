@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 	corev1 "k8s.io/api/core/v1"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 )
 
 // GetContainerNames 获取容器名称列表
@@ -72,30 +72,30 @@ func GetAllContainerImages(podTemplate *corev1.PodSpec) []string {
 }
 
 // kube_pod/log.go
-func OpenPodLogStream(ctx context.Context, name, ns, container string, tail int64) (io.ReadCloser, error) {
+func OpenPodLogStream(client *k8s.Client, ctx context.Context, name, ns, container string, tail int64) (io.ReadCloser, error) {
 	// 统一默认 & 上限（用全局配置）
 	if tail <= 0 {
-		tail = global.PodLogSetting.TailDefault
+		tail = client.PodLogSetting.TailDefault
 	}
-	if max := global.PodLogSetting.TailMax; max > 0 && tail > max {
+	if max := client.PodLogSetting.TailMax; max > 0 && tail > max {
 		tail = max
 	}
 
-	follow := global.PodLogSetting.EnableStreaming // 全局决定是否跟随
+	follow := client.PodLogSetting.EnableStreaming // 全局决定是否跟随
 
 	opts := &corev1.PodLogOptions{
 		Container:  container,
 		Follow:     follow,
 		TailLines:  &tail,
-		Timestamps: global.PodLogSetting.Timestamps,
-		Previous:   global.PodLogSetting.Previous,
+		Timestamps: client.PodLogSetting.Timestamps,
+		Previous:   client.PodLogSetting.Previous,
 	}
-	if lb := global.PodLogSetting.LimitBytes; lb > 0 && !follow {
+	if lb := client.PodLogSetting.LimitBytes; lb > 0 && !follow {
 		// 跟随时一般不设 LimitBytes；一次性时可作为上限
 		opts.LimitBytes = &lb
 	}
 
-	return global.KubeClient.CoreV1().
+	return client.Interface.CoreV1().
 		Pods(ns).
 		GetLogs(name, opts).
 		Stream(ctx) // 传入请求上下文，支持取消

@@ -7,17 +7,17 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"strings"
 	"time"
 )
 
 // 通用 Patch：传入 StrategicMergePatch 的 bytes，返回最新的 Ingress
-func PatchIngress(ctx context.Context, namespace, name string, patch []byte) (*networkingv1.Ingress, error) {
+func PatchIngress(client *k8s.Client, ctx context.Context, namespace, name string, patch []byte) (*networkingv1.Ingress, error) {
 	c, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	ing, err := global.KubeClient.
+	ing, err := client.Interface.
 		NetworkingV1().
 		Ingresses(namespace).
 		Patch(c, name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
@@ -33,7 +33,7 @@ func PatchIngress(ctx context.Context, namespace, name string, patch []byte) (*n
 // - 接收完整 Ingress JSON 对象
 // - 自动补齐 ResourceVersion，避免 409 冲突
 // - 命名空间由参数 namespace 指定
-func PatchJsonIngress(ctx context.Context, namespace, content string) (*networkingv1.Ingress, error) {
+func PatchJsonIngress(client *k8s.Client, ctx context.Context, namespace, content string) (*networkingv1.Ingress, error) {
 	// 统一上下文超时
 	c, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
@@ -59,7 +59,7 @@ func PatchJsonIngress(ctx context.Context, namespace, content string) (*networki
 	}
 
 	// 获取旧 Ingress，确保 ResourceVersion 一致（防止 409）
-	old, err := global.KubeClient.NetworkingV1().
+	old, err := client.Interface.NetworkingV1().
 		Ingresses(namespace).
 		Get(c, ing.Name, metav1.GetOptions{})
 	if err != nil {
@@ -74,14 +74,14 @@ func PatchJsonIngress(ctx context.Context, namespace, content string) (*networki
 	ing.ManagedFields = nil
 
 	// 全量更新（PUT）
-	updated, err := global.KubeClient.NetworkingV1().
+	updated, err := client.Interface.NetworkingV1().
 		Ingresses(namespace).
 		Update(c, &ing, metav1.UpdateOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("更新 Ingress 失败: %w", err)
 	}
 
-	global.Logger.Infof("Ingress [%s] 在命名空间 [%s] 更新成功 (rv=%s)",
+	client.Logger.Infof("Ingress [%s] 在命名空间 [%s] 更新成功 (rv=%s)",
 		updated.Name, namespace, updated.ResourceVersion)
 
 	return updated, nil

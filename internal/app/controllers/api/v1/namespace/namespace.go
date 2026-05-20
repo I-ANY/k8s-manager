@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/valid"
 )
@@ -41,13 +41,14 @@ func (ctl *KubeNamespaceController) Create(ctx *gin.Context) {
 	}
 
 	// Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 
 	// 调用 Service 创建 Namespace
 	ns, err := svc.KubeCreateNamespace(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeCreateNamespace error", zap.Error(err))
+		a.Logger.Error("service.KubeCreateNamespace error", zap.Error(err))
 		return
 	}
 
@@ -80,11 +81,12 @@ func (ctl *KubeNamespaceController) List(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	items, total, err := svc.KubeNamespaceList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeNamespaceList error", zap.Error(err))
+		a.Logger.Error("service.KubeNamespaceList error", zap.Error(err))
 		return
 	}
 
@@ -113,11 +115,12 @@ func (c *KubeNamespaceController) Detail(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	nsDetail, err := svc.KubeNamespaceDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeNamespaceDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeNamespaceDetail error", zap.Error(err))
 		return
 	}
 
@@ -150,10 +153,11 @@ func (ctl *KubeNamespaceController) Delete(ctx *gin.Context) {
 	}
 
 	// 调用 Service
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeNamespaceDelete(ctx.Request.Context(), param); err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeNamespaceDelete error", zap.Error(err))
+		a.Logger.Error("service.KubeNamespaceDelete error", zap.Error(err))
 		return
 	}
 
@@ -181,7 +185,8 @@ func (c *KubeNamespaceController) Patch(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeNamespaceUpdateRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	updated, err := svc.KubeNamespaceUpdate(ctx, param)
 	if err != nil {
 		ctx.Error(err)

@@ -9,7 +9,7 @@ import (
 	"k8soperation/pkg/utils"
 )
 
-func ListEventsV1(ctx context.Context, namespace string, q *requests.KubeEventListRequest) ([]models.EventItem, string, error) {
+func ListEventsV1(client *k8s.Client, ctx context.Context, namespace string, q *requests.KubeEventListRequest) ([]models.EventItem, string, error) {
 	// 构建FieldSelector用于EventsV1的事件选择
 	fs := BuildFieldSelectorEventsV1(q.Kind, q.Name, q.Type, q.Reason)
 	// 设置ListOptions，包含字段选择器、限制数量和继续令牌
@@ -19,7 +19,7 @@ func ListEventsV1(ctx context.Context, namespace string, q *requests.KubeEventLi
 		Continue:      q.ContinueToken,           // 分页继续令牌，用于分页查询
 	}
 	// 使用Kubernetes客户端获取事件列表
-	lst, err := global.KubeClient.EventsV1().Events(namespace).List(ctx, opts)
+	lst, err := client.Interface.EventsV1().Events(namespace).List(ctx, opts)
 	if err != nil {
 		return nil, "", err // 如果发生错误，返回空结果和错误信息
 	}

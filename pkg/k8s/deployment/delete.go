@@ -8,10 +8,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 )
 
-func DeleteDeployment(ctx context.Context, name, namespace string) error {
+func DeleteDeployment(client *k8s.Client, ctx context.Context, name, namespace string) error {
 	// 统一超时/取消
 	c, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
@@ -21,7 +21,7 @@ func DeleteDeployment(ctx context.Context, name, namespace string) error {
 	opts := metav1.DeleteOptions{PropagationPolicy: &fg}
 
 	// 发起删除
-	if err := global.KubeClient.AppsV1().
+	if err := client.Interface.AppsV1().
 		Deployments(namespace).
 		Delete(c, name, opts); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -38,7 +38,7 @@ func DeleteDeployment(ctx context.Context, name, namespace string) error {
 		30*time.Second, // timeout
 		true,           // immediate (是否立即执行一次)
 		func(ctx context.Context) (done bool, err error) {
-			_, err = global.KubeClient.AppsV1().
+			_, err = client.Interface.AppsV1().
 				Deployments(namespace).
 				Get(ctx, name, metav1.GetOptions{})
 			if apierrors.IsNotFound(err) {
@@ -51,12 +51,12 @@ func DeleteDeployment(ctx context.Context, name, namespace string) error {
 	return err
 }
 
-func DeleteService(ctx context.Context, name, namespace string) error {
+func DeleteService(client *k8s.Client, ctx context.Context, name, namespace string) error {
 	// 统一超时/取消
 	c, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	err := global.KubeClient.CoreV1().
+	err := client.Interface.CoreV1().
 		Services(namespace).
 		Delete(c, name, metav1.DeleteOptions{})
 	if err != nil {
@@ -72,7 +72,7 @@ func DeleteService(ctx context.Context, name, namespace string) error {
 		10*time.Second,
 		true,
 		func(ctx context.Context) (bool, error) {
-			_, err := global.KubeClient.CoreV1().Services(namespace).Get(ctx, name, metav1.GetOptions{})
+			_, err := client.Interface.CoreV1().Services(namespace).Get(ctx, name, metav1.GetOptions{})
 			if apierrors.IsNotFound(err) {
 				return true, nil
 			}

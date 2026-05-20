@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/k8s/cronjob"
 	"k8soperation/pkg/valid"
@@ -37,13 +37,14 @@ func (c *KubeCronJobController) Create(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 
 	// 调用 CronJob 创建逻辑
 	cronJobObj, err := svc.KubeCronJobCreate(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeCronJobCreate error", zap.Error(err))
+		a.Logger.Error("service.KubeCronJobCreate error", zap.Error(err))
 		return
 	}
 
@@ -77,11 +78,12 @@ func (c *KubeCronJobController) List(ctx *gin.Context) {
 	}
 
 	// 4) 调用 Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	cjs, total, err := svc.KubeCronJobList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeCronJobList error", zap.Error(err))
+		a.Logger.Error("service.KubeCronJobList error", zap.Error(err))
 		return
 	}
 
@@ -110,11 +112,12 @@ func (c *KubeCronJobController) Detail(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	cj, jobs, err := svc.KubeCronJobDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeCronJobDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeCronJobDetail error", zap.Error(err))
 		return
 	}
 
@@ -178,10 +181,11 @@ func (c *KubeCronJobController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeCronJobDelete(ctx.Request.Context(), req); err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeCronJobDelete error", zap.Error(err))
+		a.Logger.Error("service.KubeCronJobDelete error", zap.Error(err))
 		return
 	}
 
@@ -210,12 +214,13 @@ func (c *KubeCronJobController) Suspend(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 
 	// 调用 Service 层逻辑
 	if err := svc.KubeCronJobSuspend(ctx.Request.Context(), req); err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeCronJobSuspend error", zap.Error(err))
+		a.Logger.Error("service.KubeCronJobSuspend error", zap.Error(err))
 		return
 	}
 

@@ -8,11 +8,11 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
-func RestartStatefulSet(ctx context.Context, namespace, name string) (*appv1.StatefulSet, error) {
+func RestartStatefulSet(client *k8s.Client, ctx context.Context, namespace, name string) (*appv1.StatefulSet, error) {
 	// 定义用于记录重启时间的注释键名
 	const restartedAtAnno = "kubectl.kubernetes.io/restartedAt"
 	// 获取当前时间并格式化为RFC3339标准格式
@@ -43,12 +43,12 @@ func RestartStatefulSet(ctx context.Context, namespace, name string) (*appv1.Sta
 	defer cancel() // 确保函数返回前取消上下文
 
 	// 使用StrategicMergePatch类型对StatefulSet进行patch操作
-	sts, err := global.KubeClient.AppsV1().
+	sts, err := client.Interface.AppsV1().
 		StatefulSets(namespace).
 		Patch(ctx, name, types.StrategicMergePatchType, b, metav1.PatchOptions{})
 	if err != nil {
 		// 如果patch操作失败，记录错误日志并返回错误
-		global.Logger.Error("restart statefulset (patch) failed",
+		client.Logger.Error("restart statefulset (patch) failed",
 			zap.String("namespace", namespace),
 			zap.String("name", name),
 			zap.Error(err),
@@ -57,7 +57,7 @@ func RestartStatefulSet(ctx context.Context, namespace, name string) (*appv1.Sta
 	}
 
 	// 如果操作成功，记录信息日志
-	global.Logger.Info("restart statefulset triggered",
+	client.Logger.Info("restart statefulset triggered",
 		zap.String("namespace", namespace),
 		zap.String("name", name),
 		zap.String("restartedAt", ts),

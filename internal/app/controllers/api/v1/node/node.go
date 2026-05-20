@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/valid"
 )
@@ -40,11 +40,12 @@ func (ctl *KubeNodeController) List(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	items, total, err := svc.KubeNodeList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeNodeList error", zap.Error(err))
+		a.Logger.Error("service.KubeNodeList error", zap.Error(err))
 		return
 	}
 
@@ -78,11 +79,12 @@ func (c *KubeNodeController) Detail(ctx *gin.Context) {
 	}
 
 	// 4) 调用 Service
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	nodeObj, err := svc.KubeNodeDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeNodeDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeNodeDetail error", zap.Error(err))
 		return
 	}
 
@@ -135,11 +137,12 @@ func (ctl *KubeNodeController) ListPods(ctx *gin.Context) {
 	}
 
 	// 调用 Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	items, err := svc.KubeNodePods(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeNodePods error", zap.Error(err))
+		a.Logger.Error("service.KubeNodePods error", zap.Error(err))
 		return
 	}
 
@@ -172,12 +175,13 @@ func (ctl *KubeNodeController) Metrics(ctx *gin.Context) {
 	}
 
 	// 调用 service
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	items, total, err := svc.KubeNodeMetricsList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Errorf("获取 Node 指标失败")
-		global.Logger.Error("service.KubeNodeMetricsList error", zap.Error(err))
+		a.Logger.Errorf("获取 Node 指标失败")
+		a.Logger.Error("service.KubeNodeMetricsList error", zap.Error(err))
 		return
 	}
 
@@ -217,10 +221,11 @@ func (c *KubeNodeController) Cordon(ctx *gin.Context) {
 	}
 
 	// 4) 调用 Service
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeNodeCordon(ctx.Request.Context(), param); err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeNodeCordon error", zap.Error(err))
+		a.Logger.Error("service.KubeNodeCordon error", zap.Error(err))
 		return
 	}
 
@@ -258,10 +263,11 @@ func (c *KubeNodeController) Drain(ctx *gin.Context) {
 	}
 
 	// 4) 调用 Service
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeNodeDrain(ctx.Request.Context(), param); err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeNodeDrain error", zap.Error(err))
+		a.Logger.Error("service.KubeNodeDrain error", zap.Error(err))
 		return
 	}
 
@@ -295,10 +301,11 @@ func (c *KubeNodeController) Evict(ctx *gin.Context) {
 	}
 
 	// 3) 调 Service
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubePodEvict(ctx.Request.Context(), param); err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubePodEvict error", zap.Error(err))
+		a.Logger.Error("service.KubePodEvict error", zap.Error(err))
 		return
 	}
 

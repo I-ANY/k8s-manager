@@ -7,17 +7,17 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"strings"
 	"time"
 )
 
 // 通用 StrategicMergePatch（适合结构化对象）
-func PatchConfigMap(ctx context.Context, namespace, name string, patch []byte) (*corev1.ConfigMap, error) {
+func PatchConfigMap(client *k8s.Client, ctx context.Context, namespace, name string, patch []byte) (*corev1.ConfigMap, error) {
 	c, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	cm, err := global.KubeClient.
+	cm, err := client.Interface.
 		CoreV1().
 		ConfigMaps(namespace).
 		Patch(c, name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
@@ -27,7 +27,7 @@ func PatchConfigMap(ctx context.Context, namespace, name string, patch []byte) (
 	return cm, nil
 }
 
-func PatchConfigMapJson(ctx context.Context, namespace, content string) (*corev1.ConfigMap, error) {
+func PatchConfigMapJson(client *k8s.Client, ctx context.Context, namespace, content string) (*corev1.ConfigMap, error) {
 	// 设置超时（10s）
 	c, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
@@ -53,7 +53,7 @@ func PatchConfigMapJson(ctx context.Context, namespace, content string) (*corev1
 	}
 
 	// 获取旧对象，用于继承 Labels / Annotations（可选）
-	old, err := global.KubeClient.CoreV1().
+	old, err := client.Interface.CoreV1().
 		ConfigMaps(namespace).
 		Get(c, cm.Name, metav1.GetOptions{})
 	if err != nil {
@@ -69,13 +69,13 @@ func PatchConfigMapJson(ctx context.Context, namespace, content string) (*corev1
 	}
 
 	// 执行全量更新（PUT）
-	updated, err := global.KubeClient.CoreV1().
+	updated, err := client.Interface.CoreV1().
 		ConfigMaps(namespace).
 		Update(c, &cm, metav1.UpdateOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("更新 ConfigMap 失败: %w", err)
 	}
 
-	global.Logger.Infof("ConfigMap [%s] 在命名空间 [%s] 更新成功", cm.Name, namespace)
+	client.Logger.Infof("ConfigMap [%s] 在命名空间 [%s] 更新成功", cm.Name, namespace)
 	return updated, nil
 }

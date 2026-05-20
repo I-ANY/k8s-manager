@@ -6,17 +6,17 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
 // GetPodByDeployment 获取某个 Deployment 对应的所有 Pod
-func GetPodByDeployment(ctx context.Context, namespace, deploymentName string) ([]corev1.Pod, error) {
+func GetPodByDeployment(client *k8s.Client, ctx context.Context, namespace, deploymentName string) ([]corev1.Pod, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	// 读取 Deployment
-	deploy, err := global.KubeClient.AppsV1().Deployments(namespace).
+	deploy, err := client.Interface.AppsV1().Deployments(namespace).
 		Get(ctx, deploymentName, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -35,7 +35,7 @@ func GetPodByDeployment(ctx context.Context, namespace, deploymentName string) (
 	selector := metav1.FormatLabelSelector(deploy.Spec.Selector)
 
 	// 获取匹配的 Pod 列表
-	podList, err := global.KubeClient.CoreV1().
+	podList, err := client.Interface.CoreV1().
 		Pods(namespace).
 		List(ctx, metav1.ListOptions{LabelSelector: selector})
 	if err != nil {
@@ -46,7 +46,7 @@ func GetPodByDeployment(ctx context.Context, namespace, deploymentName string) (
 	}
 
 	if len(podList.Items) == 0 {
-		global.Logger.Infof("no pods found for deployment %s/%s", namespace, deploymentName)
+		client.Logger.Infof("no pods found for deployment %s/%s", namespace, deploymentName)
 	}
 
 	return podList.Items, nil

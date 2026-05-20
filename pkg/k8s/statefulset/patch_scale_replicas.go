@@ -9,12 +9,12 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
 func PatchScaleReplicasStatefulSet(
-	ctx context.Context, namespace, name string, replicas int32,
+	client *k8s.Client, ctx context.Context, namespace, name string, replicas int32,
 ) (*appv1.StatefulSet, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
@@ -24,25 +24,25 @@ func PatchScaleReplicasStatefulSet(
 	}
 	bs, _ := json.Marshal(patch)
 
-	sts, err := global.KubeClient.AppsV1().
+	sts, err := client.Interface.AppsV1().
 		StatefulSets(namespace).
 		Patch(ctx, name, types.MergePatchType, bs, metav1.PatchOptions{})
 	if err != nil {
 		switch {
 		case errors.IsNotFound(err):
-			global.Logger.Warn("statefulset not found",
+			client.Logger.Warn("statefulset not found",
 				zap.String("namespace", namespace), zap.String("name", name))
 			return nil, fmt.Errorf("statefulset %s/%s not found", namespace, name)
 		case errors.IsForbidden(err):
 			return nil, fmt.Errorf("forbidden to patch statefulset %s/%s: %w", namespace, name, err)
 		default:
-			global.Logger.Error("patch statefulset replicas failed",
+			client.Logger.Error("patch statefulset replicas failed",
 				zap.String("namespace", namespace), zap.String("name", name), zap.Error(err))
 			return nil, fmt.Errorf("patch statefulset %s/%s replicas=%d failed: %w", namespace, name, replicas, err)
 		}
 	}
 
-	global.Logger.Info("scaled statefulset",
+	client.Logger.Info("scaled statefulset",
 		zap.String("namespace", namespace),
 		zap.String("name", name),
 		zap.Int32("replicas", replicas),

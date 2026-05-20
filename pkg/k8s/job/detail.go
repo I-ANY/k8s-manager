@@ -10,28 +10,28 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"go.uber.org/zap"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 )
 
 // GetJobDetail 获取 Job 详情
-func GetJobDetail(ctx context.Context, name, namespace string) (*batchv1.Job, error) {
+func GetJobDetail(client *k8s.Client, ctx context.Context, name, namespace string) (*batchv1.Job, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	job, err := global.KubeClient.BatchV1().
+	job, err := client.Interface.BatchV1().
 		Jobs(namespace).
 		Get(ctx, name, metav1.GetOptions{})
 
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			global.Logger.Error("job not found",
+			client.Logger.Error("job not found",
 				zap.String("namespace", namespace),
 				zap.String("name", name),
 			)
 			return nil, fmt.Errorf("job %s/%s not found", namespace, name)
 		}
 
-		global.Logger.Error("get job failed",
+		client.Logger.Error("get job failed",
 			zap.String("namespace", namespace),
 			zap.String("name", name),
 			zap.Error(err),

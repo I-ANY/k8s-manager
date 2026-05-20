@@ -5,17 +5,17 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"time"
 )
 
-func DeleteDaemonSet(ctx context.Context, name, namespace string) error {
+func DeleteDaemonSet(client *k8s.Client, ctx context.Context, name, namespace string) error {
 	// 显式前台级联：先删 Pod，再删 DaemonSet
 	fg := metav1.DeletePropagationForeground
 	opts := metav1.DeleteOptions{PropagationPolicy: &fg}
 
 	// 发起删除请求
-	if err := global.KubeClient.AppsV1().
+	if err := client.Interface.AppsV1().
 		DaemonSets(namespace).
 		Delete(ctx, name, opts); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -31,7 +31,7 @@ func DeleteDaemonSet(ctx context.Context, name, namespace string) error {
 		30*time.Second, // 最长超时
 		true,           // 立即执行一次检查
 		func(ctx context.Context) (done bool, err error) {
-			_, err = global.KubeClient.AppsV1().
+			_, err = client.Interface.AppsV1().
 				DaemonSets(namespace).
 				Get(ctx, name, metav1.GetOptions{})
 			if apierrors.IsNotFound(err) {

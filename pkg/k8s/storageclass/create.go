@@ -6,9 +6,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8soperation/global"
 	"k8soperation/internal/app/requests"
+	k8sclient "k8soperation/pkg/k8s"
 )
 
-func CreateStorageClass(ctx context.Context, req *requests.KubeStorageClassCreateRequest) (*storagev1.StorageClass, error) {
+func CreateStorageClass(client *k8sclient.Client, ctx context.Context, req *requests.KubeStorageClassCreateRequest) (*storagev1.StorageClass, error) {
 	sc, err := buildStorageClassFromReq(req)
 	if err != nil {
 		return nil, err
@@ -18,10 +19,10 @@ func CreateStorageClass(ctx context.Context, req *requests.KubeStorageClassCreat
 		StorageClasses().
 		Create(ctx, sc, metav1.CreateOptions{})
 	if err != nil {
-		global.Logger.Errorf("create storageclass failed: %v", err)
+		client.Log().Errorf("create storageclass failed: %v", err)
 		return nil, err
 	}
 
-	global.Logger.Infof("storageclass %q created successfully", created.Name)
+	client.Log().Infof("storageclass %q created successfully", created.Name)
 	return created, nil
 }

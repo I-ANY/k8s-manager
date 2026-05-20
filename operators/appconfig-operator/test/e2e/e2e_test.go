@@ -232,7 +232,7 @@ var _ = Describe("Manager", Ordered, func() {
 								"runAsNonRoot": true,
 								"runAsUser": 1000,
 								"seccompProfile": {
-									"type": "RuntimeDefault"
+									"types": "RuntimeDefault"
 								}
 							}
 						}],

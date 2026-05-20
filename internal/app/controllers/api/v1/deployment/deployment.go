@@ -2,15 +2,16 @@ package deployment
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/k8s/deployment"
 	"k8soperation/pkg/utils"
 	"k8soperation/pkg/valid"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type KubeDeploymentController struct{}
@@ -45,11 +46,12 @@ func (c *KubeDeploymentController) List(ctx *gin.Context) {
 	}
 
 	// 调用 Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	deployments, total, err := svc.KubeDeploymentList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDeploymentList error", zap.Error(err))
+		a.Logger.Error("service.KubeDeploymentList error", zap.Error(err))
 		return
 	}
 
@@ -76,11 +78,12 @@ func (c *KubeDeploymentController) Detail(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeDeploymentDetailRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	dp, err := svc.KubeDeploymentDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDeploymentDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeDeploymentDetail error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{
@@ -105,11 +108,12 @@ func (c *KubeDeploymentController) Create(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, req, requests.ValidKubeDeploymentCreateRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	dp, svcObj, err := svc.KubeDeploymentCreate(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDeploymentCreate error", zap.Error(err))
+		a.Logger.Error("service.KubeDeploymentCreate error", zap.Error(err))
 		return
 	}
 	r.Success(deployment.BuildDeploymentResponse(dp, svcObj, req))
@@ -131,9 +135,10 @@ func (c *KubeDeploymentController) Delete(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeDeploymentDeleteRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeDeploymentDelete(ctx.Request.Context(), param); err != nil {
-		global.Logger.Error("service.KubeDeploymentDelete error", zap.Error(err))
+		a.Logger.Error("service.KubeDeploymentDelete error", zap.Error(err))
 		ctx.Error(err)
 		return
 	}
@@ -161,7 +166,8 @@ func (c *KubeDeploymentController) Scale(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeDeploymentScaleRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	// 注意：传入的是 context.Context
 	dep, err := svc.KubeUpdateDeploymentReplicas(ctx.Request.Context(), param)
 	if err != nil {
@@ -196,11 +202,12 @@ func (c *KubeDeploymentController) UpdateImage(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeDeploymentUpdateImageRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	dp, err := svc.KubeUpdateDeploymentImage(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeUpdateDeploymentImage error", zap.Error(err))
+		a.Logger.Error("service.KubeUpdateDeploymentImage error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{
@@ -226,11 +233,12 @@ func (c *KubeDeploymentController) PatchTemplate(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeDeploymentUpdateRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	dp, err := svc.KubeUpdateDeploymentTemplate(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeUpdateDeploymentTemplate error", zap.Error(err))
+		a.Logger.Error("service.KubeUpdateDeploymentTemplate error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{
@@ -256,11 +264,12 @@ func (c *KubeDeploymentController) Rollback(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeDeploymentRollbackRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	_, err := svc.KubeDeploymentRollback(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDeploymentRollback error", zap.Error(err))
+		a.Logger.Error("service.KubeDeploymentRollback error", zap.Error(err))
 		return
 	}
 
@@ -285,10 +294,11 @@ func (c *KubeDeploymentController) Restart(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeDeploymentRestartRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeDeploymentRestart(ctx.Request.Context(), param); err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDeploymentRestart error", zap.Error(err))
+		a.Logger.Error("service.KubeDeploymentRestart error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{
@@ -312,11 +322,12 @@ func (c *KubeDeploymentController) DeploymentPodList(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.VaildKubeCommonRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	pods, err := svc.KubeDeploymentGetPod(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDeploymentGetPod error", zap.Error(err))
+		a.Logger.Error("service.KubeDeploymentGetPod error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{
@@ -342,10 +353,11 @@ func (c *KubeDeploymentController) DeleteService(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeDeploymentDeleteRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeDeploymentDeleteService(ctx.Request.Context(), param); err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDeploymentDeleteService error", zap.Error(err))
+		a.Logger.Error("service.KubeDeploymentDeleteService error", zap.Error(err))
 		return
 	}
 	r.Success(gin.H{
@@ -363,7 +375,7 @@ func (c *KubeDeploymentController) DeleteService(ctx *gin.Context) {
 // @Param namespace     query string false "命名空间（为空=全局）"
 // @Param kind          query string false "资源类型（如 Pod/Deployment/Node）"
 // @Param name          query string false "资源名称"
-// @Param type          query string false "事件类型（Normal | Warning）"
+// @Param types          query string false "事件类型（Normal | Warning）"
 // @Param reason        query string false "事件原因（如 FailedScheduling/BackOff）"
 // @Param limit         query int    false "返回条数限制（默认50，最大500）"
 // @Param continue      query string false "K8s 分页游标（下一页传回上次返回的 next）"
@@ -379,11 +391,12 @@ func (c *KubeDeploymentController) EventList(ctx *gin.Context) {
 	if ok := valid.Validate(ctx, param, requests.ValidKubeEventListRequest); !ok {
 		return
 	}
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	items, next, err := svc.KubeEventList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeDeploymentGetEvent error", zap.Error(err))
+		a.Logger.Error("service.KubeDeploymentGetEvent error", zap.Error(err))
 	}
 	r.Success(gin.H{
 		"events":  items,         // 事件记录

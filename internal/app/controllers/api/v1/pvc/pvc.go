@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
 	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
 	"k8soperation/pkg/app/response"
 	"k8soperation/pkg/valid"
 )
@@ -36,11 +36,12 @@ func (ctl *KubePVCController) Create(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	pvc, err := svc.KubeCreatePVC(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeCreatePVC error", zap.Error(err))
+		a.Logger.Error("service.KubeCreatePVC error", zap.Error(err))
 		return
 	}
 
@@ -77,11 +78,12 @@ func (ctl *KubePVCController) List(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	items, total, err := svc.KubePVCList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubePVCList error", zap.Error(err))
+		a.Logger.Error("service.KubePVCList error", zap.Error(err))
 		return
 	}
 
@@ -116,11 +118,12 @@ func (c *KubePVCController) Detail(ctx *gin.Context) {
 	}
 
 	// 4) 调用 Service
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	pvcDetail, err := svc.KubePVCDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubePVCDetail error", zap.Error(err))
+		a.Logger.Error("service.KubePVCDetail error", zap.Error(err))
 		return
 	}
 
@@ -157,10 +160,11 @@ func (ctl *KubePVCController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubePVCDelete(ctx.Request.Context(), param); err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubePVCDelete error", zap.Error(err))
+		a.Logger.Error("service.KubePVCDelete error", zap.Error(err))
 		return
 	}
 
@@ -191,11 +195,12 @@ func (ctl *KubePVCController) Resize(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	pvcObj, err := svc.KubePVCResize(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubePVCResize error", zap.Error(err))
+		a.Logger.Error("service.KubePVCResize error", zap.Error(err))
 		return
 	}
 

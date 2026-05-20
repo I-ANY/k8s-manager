@@ -2,14 +2,15 @@ package secret
 
 import (
 	"fmt"
+	"k8soperation/internal/app/requests"
+	"k8soperation/internal/app/services"
+	appctx "k8soperation/pkg/app"
+	"k8soperation/pkg/app/response"
+	"k8soperation/pkg/valid"
+
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
-	"k8soperation/global"
-	"k8soperation/internal/app/requests"
-	"k8soperation/internal/app/services"
-	"k8soperation/pkg/app/response"
-	"k8soperation/pkg/valid"
 )
 
 type KubeSecretController struct{}
@@ -38,11 +39,12 @@ func (ctl *KubeSecretController) Create(ctx *gin.Context) {
 	}
 
 	// 调用 Service
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	sec, err := svc.KubeCreateSecret(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeCreateSecret error", zap.Error(err))
+		a.Logger.Error("service.KubeCreateSecret error", zap.Error(err))
 		return
 	}
 
@@ -50,7 +52,7 @@ func (ctl *KubeSecretController) Create(ctx *gin.Context) {
 	r.Success(gin.H{
 		"name":       sec.Name,
 		"namespace":  sec.Namespace,
-		"type":       sec.Type,
+		"types":      sec.Type,
 		"data_keys":  lo.Keys(sec.Data), // 返回数据键名（避免输出敏感值）
 		"created_at": sec.CreationTimestamp,
 	})
@@ -81,11 +83,12 @@ func (c *KubeSecretController) List(ctx *gin.Context) {
 	}
 
 	// 调用 Service 层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	secrets, total, err := svc.KubeSecretList(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeSecretList error", zap.Error(err))
+		a.Logger.Error("service.KubeSecretList error", zap.Error(err))
 		return
 	}
 
@@ -119,11 +122,12 @@ func (c *KubeSecretController) Detail(ctx *gin.Context) {
 	}
 
 	// 调用业务逻辑层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	secretDetail, err := svc.KubeSecretDetail(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeSecretDetail error", zap.Error(err))
+		a.Logger.Error("service.KubeSecretDetail error", zap.Error(err))
 		return
 	}
 
@@ -132,7 +136,7 @@ func (c *KubeSecretController) Detail(ctx *gin.Context) {
 		"message":    "获取 Secret 详情成功",
 		"name":       secretDetail.Name,
 		"namespace":  secretDetail.Namespace,
-		"type":       secretDetail.Type,
+		"types":      secretDetail.Type,
 		"data_keys":  lo.Keys(secretDetail.Data), // 仅返回 key 列表
 		"created_at": secretDetail.CreationTimestamp,
 	})
@@ -158,9 +162,10 @@ func (c *KubeSecretController) Delete(ctx *gin.Context) {
 	}
 
 	// 调用服务层
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	if err := svc.KubeSecretDelete(ctx.Request.Context(), param); err != nil {
-		global.Logger.Error("service.KubeSecretDelete error", zap.Error(err))
+		a.Logger.Error("service.KubeSecretDelete error", zap.Error(err))
 		ctx.Error(err)
 		return
 	}
@@ -193,11 +198,12 @@ func (c *KubeSecretController) Patch(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	out, err := svc.KubeSecretPatch(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("KubeSecretPatch error", zap.Error(err))
+		a.Logger.Error("KubeSecretPatch error", zap.Error(err))
 		return
 	}
 
@@ -227,11 +233,12 @@ func (c *KubeSecretController) PatchJSON(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	out, err := svc.KubeSecretUpdate(ctx.Request.Context(), param)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("KubeSecretPatchJSON error", zap.Error(err))
+		a.Logger.Error("KubeSecretPatchJSON error", zap.Error(err))
 		return
 	}
 
@@ -260,11 +267,12 @@ func (c *KubeSecretController) Decode(ctx *gin.Context) {
 		return
 	}
 
-	svc := services.NewServices(ctx)
+	a := appctx.FromContext(ctx)
+	svc := services.NewServices(ctx, a)
 	decoded, err := svc.KubeSecretDecode(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.Error(err)
-		global.Logger.Error("service.KubeSecretDecode error", zap.Error(err))
+		a.Logger.Error("service.KubeSecretDecode error", zap.Error(err))
 		return
 	}
 

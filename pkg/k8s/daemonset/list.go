@@ -4,11 +4,11 @@ import (
 	"context"
 	appv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
+	"k8soperation/pkg/k8s"
 	"k8soperation/pkg/k8s/dataselect"
 )
 
-func GetDaemonSetList(ctx context.Context, name, namespace string, page, limit int) ([]appv1.DaemonSet, int, error) {
+func GetDaemonSetList(client *k8s.Client, ctx context.Context, name, namespace string, page, limit int) ([]appv1.DaemonSet, int, error) {
 	// 参数兜底
 	if page <= 0 {
 		page = 1
@@ -18,7 +18,7 @@ func GetDaemonSetList(ctx context.Context, name, namespace string, page, limit i
 	}
 
 	// 拉取 DS 列表
-	list, err := global.KubeClient.AppsV1().
+	list, err := client.Interface.AppsV1().
 		DaemonSets(namespace).
 		List(ctx, metav1.ListOptions{})
 	if err != nil {

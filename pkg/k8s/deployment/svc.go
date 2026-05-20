@@ -6,25 +6,25 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8soperation/global"
 	"k8soperation/internal/app/requests"
+	"k8soperation/pkg/k8s"
 )
 
 // CreateServiceFromDeploymentReq 根据 Deployment 创建 Service
-func CreateServiceFromDeployment(ctx context.Context, req *requests.KubeDeploymentCreateRequest) (*corev1.Service, error) {
+func CreateServiceFromDeployment(client *k8s.Client, ctx context.Context, req *requests.KubeDeploymentCreateRequest) (*corev1.Service, error) {
 	svc := BuildServiceFromDeploymentReq(req)
 
-	createdSvc, err := global.KubeClient.CoreV1().
+	createdSvc, err := client.Interface.CoreV1().
 		Services(req.Namespace).
 		Create(ctx, svc, metav1.CreateOptions{})
 	if err != nil {
 		if apierrors.IsAlreadyExists(err) {
 			return nil, fmt.Errorf("service %q already exists in namespace %q", svc.Name, svc.Namespace)
 		}
-		global.Logger.Errorf("create service failed: %v", err)
+		client.Logger.Errorf("create service failed: %v", err)
 		return nil, err
 	}
 
-	global.Logger.Infof("service %q created successfully", createdSvc.Name)
+	client.Logger.Infof("service %q created successfully", createdSvc.Name)
 	return createdSvc, nil
 }
