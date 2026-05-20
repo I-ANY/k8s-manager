@@ -23,10 +23,14 @@ var (
 
 func SetUpAppConfig(configFile string) {
 	config := types.AppConfig{}
-	if err := setup(&config, configFile); err != nil {
+	if err := LoadAppConfig(&config, configFile); err != nil {
 		log.Fatalf("%+v", errors.WithMessage(err, "setup failed"))
 	}
 	AppConfig = &config
+}
+
+func LoadAppConfig(config *types.AppConfig, configFile string) error {
+	return setup(config, configFile)
 }
 
 func setup(config interface{}, configFile string) error {

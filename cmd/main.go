@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	migratecmd "k8soperation/cmd/migrate"
 	"k8soperation/internal/bootstrap"
 	"k8soperation/internal/server"
 
@@ -26,6 +27,7 @@ func NewRootCommand(run RunFunc) *cobra.Command {
 		},
 	}
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "config file path; falls back to APP_CONFIG or configs/config.yaml")
+	rootCmd.AddCommand(migratecmd.NewCommand(&configFile))
 	return rootCmd
 }
 
