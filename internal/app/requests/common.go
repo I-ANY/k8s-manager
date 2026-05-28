@@ -35,6 +35,7 @@ func ValidCommonIdRequest(data interface{}, ctx *gin.Context) map[string][]strin
 
 // KubeCommonRequest 公共请求
 type KubeCommonRequest struct {
+	ClusterID uint32 `json:"cluster_id" form:"cluster_id" valid:"-"`
 	Name      string `json:"name" form:"name" valid:"name"`
 	Namespace string `json:"namespace" form:"namespace" valid:"namespace"`
 }

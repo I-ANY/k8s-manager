@@ -5,6 +5,8 @@ import (
 
 	"k8soperation/internal/app/dao"
 	"k8soperation/pkg/app"
+	"k8soperation/pkg/cluster"
+	"k8soperation/pkg/k8s"
 )
 
 type Services struct {
@@ -31,4 +33,8 @@ func NewServicesWithApp(a *app.App) *Services {
 
 func (s *Services) App() *app.App {
 	return s.app
+}
+
+func (s *Services) K8sClient(ctx context.Context, clusterID uint32) (*k8s.Client, error) {
+	return cluster.GetClient(ctx, s.app, clusterID)
 }

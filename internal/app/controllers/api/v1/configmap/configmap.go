@@ -24,7 +24,8 @@ func NewKubeConfigMapController() *KubeConfigMapController {
 // @Tags        K8s ConfigMap 管理
 // @Accept      json
 // @Produce     json
-// @Param       body  body  requests.KubeConfigMapCreateRequest  true  "ConfigMap 创建参数"
+// @Param       cluster_id  body  uint32  false  "集群ID，不传则使用默认集群"
+// @Param       body        body  requests.KubeConfigMapCreateRequest  true  "ConfigMap 创建参数"
 // @Success     200   {object} response.Response "成功"
 // @Failure     400   {object} errorcode.Error   "请求参数错误"
 // @Failure     500   {object} errorcode.Error   "内部错误"
@@ -63,6 +64,7 @@ func (ctl *KubeConfigMapController) Create(ctx *gin.Context) {
 // @Description 支持分页、命名空间过滤、名称模糊查询
 // @Tags K8s ConfigMap 管理
 // @Produce json
+// @Param cluster_id query int false "集群ID，不传则使用默认集群"
 // @Param namespace query string false "命名空间" maxlength(100)
 // @Param name query string false "ConfigMap 名称(模糊匹配)" maxlength(100)
 // @Param page query int true "页码 (从1开始)"
@@ -104,6 +106,7 @@ func (c *KubeConfigMapController) List(ctx *gin.Context) {
 // @Summary 获取 ConfigMap 详情
 // @Tags K8s ConfigMap 管理
 // @Produce json
+// @Param cluster_id query int false "集群ID，不传则使用默认集群"
 // @Param namespace query string true "命名空间"
 // @Param name query string true "ConfigMap 名称"
 // @Success 200 {object} string "成功"
@@ -143,6 +146,7 @@ func (c *KubeConfigMapController) Detail(ctx *gin.Context) {
 // @Summary 删除 ConfigMap
 // @Tags    K8s ConfigMap 管理
 // @Produce json
+// @Param   cluster_id query int false "集群ID，不传则使用默认集群"
 // @Param   namespace query string true "命名空间"
 // @Param   name      query string true "ConfigMap 名称"
 // @Success 200 {object} response.Response "成功"
@@ -179,6 +183,7 @@ func (c *KubeConfigMapController) Delete(ctx *gin.Context) {
 // @Tags K8s ConfigMap 管理
 // @Accept application/strategic-merge-patch+json
 // @Produce json
+// @Param cluster_id query int false "集群ID，不传则使用默认集群"
 // @Param namespace query string true "命名空间"
 // @Param name query string true "ConfigMap 名称"
 // @Param content body string true "Patch Body(JSON字符串)"
@@ -214,6 +219,7 @@ func (c *KubeConfigMapController) Patch(ctx *gin.Context) {
 // @Tags K8s ConfigMap 管理
 // @Accept application/merge-patch+json
 // @Produce json
+// @Param cluster_id query int false "集群ID，不传则使用默认集群"
 // @Param namespace query string true "命名空间"
 // @Param name query string true "ConfigMap 名称"
 // @Param content body string true "Patch Body(JSON字符串)"

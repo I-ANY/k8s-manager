@@ -1,6 +1,8 @@
 package requests
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/thedevsaddam/govalidator"
 	"k8soperation/pkg/valid"
@@ -15,6 +17,7 @@ func NewKubeConfigMapCreateRequest() *KubeConfigMapCreateRequest {
 }
 
 type KubeConfigMapCreateRequest struct {
+	ClusterID   uint32            `json:"cluster_id" form:"cluster_id" valid:"-"`
 	Namespace   string            `json:"namespace" valid:"namespace"`
 	Name        string            `json:"name"      valid:"name"`
 	Labels      map[string]string `json:"labels"       swaggertype:"string" valid:"-"`
@@ -127,21 +130,39 @@ func NewKubeConfigMapUpdateRequest() *KubeConfigMapUpdateRequest {
 }
 
 type KubeConfigMapUpdateRequest struct {
+	ClusterID uint32 `json:"cluster_id" form:"cluster_id" valid:"-"`
 	Namespace string `json:"namespace" valid:"namespace"`
 	Name      string `json:"name"      valid:"name"`
 	Content   string `json:"content"   valid:"required"` // JSON 字符串（或 YAML 字符串，服务端自行解析）
 }
 
 func ValidKubeConfigMapUpdateRequest(data interface{}, _ *gin.Context) map[string][]string {
-	return valid.ValidateOptions(data, govalidator.MapData{
+	// First validate namespace and name using ValidateOptions
+	baseErr := valid.ValidateOptions(data, govalidator.MapData{
 		"namespace": {"required"},
 		"name":      {"required"},
-		"content":   {"required"},
 	}, govalidator.MapData{
 		"namespace": {"required: namespace 不能为空"},
 		"name":      {"required: name 不能为空"},
-		"content":   {"required: content 不能为空（JSON/YAML 字符串）"},
 	})
+
+	// Then manually check content (trim spaces)
+	req := data.(*KubeConfigMapUpdateRequest)
+	errs := map[string][]string{}
+
+	if strings.TrimSpace(req.Content) == "" {
+		errs["content"] = []string{"content 不能为空（JSON/YAML 字符串）"}
+	}
+
+	// Merge errors
+	for k, v := range baseErr {
+		errs[k] = v
+	}
+
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
 }
 
 //
@@ -226,6 +247,7 @@ func ValidKubeConfigMapUpdateDataRequest(data interface{}, _ *gin.Context) map[s
 func NewKubeConfigMapNamesRequest() *KubeConfigMapNamesRequest { return &KubeConfigMapNamesRequest{} }
 
 type KubeConfigMapNamesRequest struct {
+	ClusterID uint32 `json:"cluster_id" form:"cluster_id" valid:"-"`
 	Namespace string `json:"namespace" form:"namespace" valid:"namespace"`
 	// 可选：按名称模糊或按 key 是否存在做过滤（看你 service 层是否支持）
 	NameLike string `json:"name_like" form:"name_like" valid:"-"`

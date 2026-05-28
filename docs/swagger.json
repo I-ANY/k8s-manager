@@ -1,11 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "基于Gin+Vue开发的K8s管理平台",
-        "title": "K8s管理平台",
-        "termsOfService": "https://gitee.com/jay-kim/k8s_operation",
-        "contact": {},
-        "version": "1.0"
+        "contact": {}
     },
     "paths": {
         "/api/": {
@@ -357,6 +353,14 @@
                 "summary": "创建 ConfigMap",
                 "parameters": [
                     {
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "body",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
                         "description": "ConfigMap 创建参数",
                         "name": "body",
                         "in": "body",
@@ -398,6 +402,12 @@
                 ],
                 "summary": "删除 ConfigMap",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "命名空间",
@@ -446,6 +456,12 @@
                 "summary": "获取 ConfigMap 详情",
                 "parameters": [
                     {
+                        "type": "integer",
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
@@ -493,6 +509,12 @@
                 ],
                 "summary": "获取 K8s ConfigMap 列表",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "query"
+                    },
                     {
                         "maxLength": 100,
                         "type": "string",
@@ -558,6 +580,12 @@
                 "summary": "Patch ConfigMap（StrategicMergePatch）",
                 "parameters": [
                     {
+                        "type": "integer",
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
@@ -616,6 +644,12 @@
                 ],
                 "summary": "Patch ConfigMap（JSON Merge Patch – 覆盖式）",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "命名空间",
@@ -1515,7 +1549,7 @@
                     {
                         "type": "string",
                         "description": "事件类型（Normal | Warning）",
-                        "name": "type",
+                        "name": "types",
                         "in": "query"
                     },
                     {
@@ -5850,7 +5884,7 @@
                 "timeout_seconds": {
                     "type": "integer"
                 },
-                "type": {
+                "types": {
                     "description": "HTTP|TCP|Command",
                     "type": "string"
                 }
@@ -5989,6 +6023,9 @@
                         }
                     }
                 },
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "data": {
                     "description": "ConfigMap 的数据部分：文本型与二进制型",
                     "type": "string"
@@ -6014,6 +6051,9 @@
                     "description": "是否级联清理：通常删除 CronJob 时是否一并清理其历史 Job",
                     "type": "boolean"
                 },
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "force": {
                     "type": "boolean"
                 },
@@ -6037,6 +6077,9 @@
         "requests.KubeCronJobSuspendRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -6055,6 +6098,9 @@
         "requests.KubeDaemonSetRollbackRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -6070,6 +6116,9 @@
         "requests.KubeDaemonSetUpdateImageRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "container": {
                     "description": "目标容器名称",
                     "type": "string"
@@ -6195,6 +6244,9 @@
         "requests.KubeDeploymentRestartRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -6206,6 +6258,9 @@
         "requests.KubeDeploymentRollbackRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -6221,6 +6276,9 @@
         "requests.KubeDeploymentScaleRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -6236,6 +6294,9 @@
         "requests.KubeDeploymentUpdateImageRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "container": {
                     "description": "目标容器名称",
                     "type": "string"
@@ -6298,6 +6359,9 @@
         "requests.KubeJobRestartRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -6309,6 +6373,9 @@
         "requests.KubeJobSuspendRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -6410,6 +6477,9 @@
         "requests.KubePodUpdateRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "content": {
                     "description": "原始 Pod JSON",
                     "type": "object"
@@ -6442,7 +6512,7 @@
                     "type": "string"
                 },
                 "mode": {
-                    "description": "推荐传 mode（更语义化），兼容 type（原生 k8s 类型字符串）",
+                    "description": "推荐传 mode（更语义化），兼容 types（原生 k8s 类型字符串）",
                     "type": "string"
                 },
                 "name": {
@@ -6465,7 +6535,7 @@
                         }
                     ]
                 },
-                "type": {
+                "types": {
                     "type": "string"
                 }
             }
@@ -6528,7 +6598,7 @@
                     "description": "None / ClientIP",
                     "type": "string"
                 },
-                "type": {
+                "types": {
                     "description": "Service 类型：ClusterIP / NodePort / LoadBalancer / Headless\nHeadless 时 cluster_ip 建议传 \"None\"",
                     "type": "string"
                 }
@@ -6650,6 +6720,9 @@
         "requests.KubeStatefulSetRestartRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -6661,6 +6734,9 @@
         "requests.KubeStatefulSetScaleRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -6676,6 +6752,9 @@
         "requests.KubeStatefulSetUpdateImageRequest": {
             "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "container": {
                     "description": "目标容器名称",
                     "type": "string"

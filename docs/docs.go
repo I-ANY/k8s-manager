@@ -9,7 +9,6 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://gitee.com/jay-kim/k8s_operation",
         "contact": {},
         "version": "{{.Version}}"
     },
@@ -57,7 +56,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -89,9 +88,9 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "types": "object",
+                            "type": "object",
                             "additionalProperties": {
-                                "types": "string"
+                                "type": "string"
                             }
                         }
                     }
@@ -128,7 +127,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -176,7 +175,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -224,7 +223,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -260,20 +259,20 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "K8s集群名",
                         "name": "cluster_name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量",
                         "name": "limit",
                         "in": "query",
@@ -284,7 +283,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -332,7 +331,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -364,6 +363,14 @@ const docTemplate = `{
                 ],
                 "summary": "创建 ConfigMap",
                 "parameters": [
+                    {
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "body",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
                     {
                         "description": "ConfigMap 创建参数",
                         "name": "body",
@@ -407,14 +414,20 @@ const docTemplate = `{
                 "summary": "删除 ConfigMap",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "integer",
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "ConfigMap 名称",
                         "name": "name",
                         "in": "query",
@@ -454,14 +467,20 @@ const docTemplate = `{
                 "summary": "获取 ConfigMap 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "integer",
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "ConfigMap 名称",
                         "name": "name",
                         "in": "query",
@@ -472,7 +491,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -502,28 +521,34 @@ const docTemplate = `{
                 "summary": "获取 K8s ConfigMap 列表",
                 "parameters": [
                     {
+                        "type": "integer",
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "query"
+                    },
+                    {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "ConfigMap 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码 (从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量 (默认20)",
                         "name": "limit",
                         "in": "query",
@@ -534,7 +559,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -566,14 +591,20 @@ const docTemplate = `{
                 "summary": "Patch ConfigMap（StrategicMergePatch）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "integer",
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "ConfigMap 名称",
                         "name": "name",
                         "in": "query",
@@ -585,7 +616,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     }
                 ],
@@ -593,7 +624,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -625,14 +656,20 @@ const docTemplate = `{
                 "summary": "Patch ConfigMap（JSON Merge Patch – 覆盖式）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "integer",
+                        "description": "集群ID，不传则使用默认集群",
+                        "name": "cluster_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "ConfigMap 名称",
                         "name": "name",
                         "in": "query",
@@ -644,7 +681,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     }
                 ],
@@ -652,7 +689,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -697,7 +734,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -739,7 +776,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -768,14 +805,14 @@ const docTemplate = `{
                 "summary": "获取 CronJob 详情（含历史 Job 列表）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "CronJob 名称",
                         "name": "name",
                         "in": "query",
@@ -786,7 +823,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -817,27 +854,27 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "CronJob 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码 (从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量 (默认20)",
                         "name": "limit",
                         "in": "query",
@@ -848,7 +885,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -894,7 +931,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -939,7 +976,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -968,14 +1005,14 @@ const docTemplate = `{
                 "summary": "删除 DaemonSet",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "DaemonSet 名称",
                         "name": "name",
                         "in": "query",
@@ -986,7 +1023,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1016,14 +1053,14 @@ const docTemplate = `{
                 "summary": "删除 DaemonSet 对应的 Service",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "DaemonSet 名称",
                         "name": "name",
                         "in": "query",
@@ -1063,14 +1100,14 @@ const docTemplate = `{
                 "summary": "获取 DaemonSet 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "DaemonSet 名称",
                         "name": "name",
                         "in": "query",
@@ -1081,7 +1118,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1112,27 +1149,27 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "DaemonSet 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码 (从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量 (默认20)",
                         "name": "limit",
                         "in": "query",
@@ -1143,7 +1180,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1176,14 +1213,14 @@ const docTemplate = `{
                 "summary": "重启 DaemonSet",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "DaemonSet 名称",
                         "name": "name",
                         "in": "query",
@@ -1194,7 +1231,7 @@ const docTemplate = `{
                     "200": {
                         "description": "DaemonSet 重启成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1240,7 +1277,7 @@ const docTemplate = `{
                     "200": {
                         "description": "DaemonSet 回滚成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1286,7 +1323,7 @@ const docTemplate = `{
                     "200": {
                         "description": "更新成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1331,7 +1368,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1360,14 +1397,14 @@ const docTemplate = `{
                 "summary": "删除 Deployment",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Deployment 名称",
                         "name": "name",
                         "in": "query",
@@ -1378,7 +1415,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1408,14 +1445,14 @@ const docTemplate = `{
                 "summary": "删除 Deployment 对应的 Service",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Deployment 名称",
                         "name": "name",
                         "in": "query",
@@ -1455,14 +1492,14 @@ const docTemplate = `{
                 "summary": "获取 Deployment 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Deployment 名称",
                         "name": "name",
                         "in": "query",
@@ -1473,7 +1510,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1503,49 +1540,49 @@ const docTemplate = `{
                 "summary": "获取事件列表（支持全局或按对象筛选）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间（为空=全局）",
                         "name": "namespace",
                         "in": "query"
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "资源类型（如 Pod/Deployment/Node）",
                         "name": "kind",
                         "in": "query"
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "资源名称",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "事件类型（Normal | Warning）",
                         "name": "types",
                         "in": "query"
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "事件原因（如 FailedScheduling/BackOff）",
                         "name": "reason",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "返回条数限制（默认50，最大500）",
                         "name": "limit",
                         "in": "query"
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "K8s 分页游标（下一页传回上次返回的 next）",
                         "name": "continue",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "最近N秒的事件（客户端二次过滤）",
                         "name": "since_seconds",
                         "in": "query"
@@ -1586,27 +1623,27 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Deployment 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码 (从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量 (默认20)",
                         "name": "limit",
                         "in": "query",
@@ -1617,7 +1654,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1662,7 +1699,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1691,14 +1728,14 @@ const docTemplate = `{
                 "summary": "获取 Deployment 对应的 Pod 列表",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Deployment 名称",
                         "name": "name",
                         "in": "query",
@@ -1709,7 +1746,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1754,7 +1791,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1799,7 +1836,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1844,7 +1881,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1889,7 +1926,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1934,7 +1971,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1963,14 +2000,14 @@ const docTemplate = `{
                 "summary": "删除 Ingress",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Ingress 名称",
                         "name": "name",
                         "in": "query",
@@ -1981,7 +2018,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2010,14 +2047,14 @@ const docTemplate = `{
                 "summary": "获取 Ingress 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Ingress 名称",
                         "name": "name",
                         "in": "query",
@@ -2028,7 +2065,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2059,27 +2096,27 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Ingress 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码 (从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量 (默认20)",
                         "name": "limit",
                         "in": "query",
@@ -2090,7 +2127,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2122,14 +2159,14 @@ const docTemplate = `{
                 "summary": "Patch Ingress（StrategicMergePatch）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Ingress 名称",
                         "name": "name",
                         "in": "query",
@@ -2141,7 +2178,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     }
                 ],
@@ -2149,7 +2186,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2181,14 +2218,14 @@ const docTemplate = `{
                 "summary": "Patch Ingress（JSON Merge Patch – 覆盖式）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Ingress 名称",
                         "name": "name",
                         "in": "query",
@@ -2200,7 +2237,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     }
                 ],
@@ -2208,7 +2245,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2253,7 +2290,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2282,14 +2319,14 @@ const docTemplate = `{
                 "summary": "删除 Job",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Job 名称",
                         "name": "name",
                         "in": "query",
@@ -2300,7 +2337,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2329,14 +2366,14 @@ const docTemplate = `{
                 "summary": "获取 Job 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Job 名称",
                         "name": "name",
                         "in": "query",
@@ -2347,7 +2384,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2378,27 +2415,27 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Job 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码 (从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量 (默认20)",
                         "name": "limit",
                         "in": "query",
@@ -2409,7 +2446,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2455,7 +2492,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2501,7 +2538,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2577,7 +2614,7 @@ const docTemplate = `{
                 "summary": "删除 Namespace",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Namespace 名称",
                         "name": "name",
                         "in": "query",
@@ -2618,7 +2655,7 @@ const docTemplate = `{
                 "summary": "获取 Namespace 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Namespace 名称",
                         "name": "name",
                         "in": "query",
@@ -2666,20 +2703,20 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码(从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量(默认20)",
                         "name": "limit",
                         "in": "query",
@@ -2720,7 +2757,7 @@ const docTemplate = `{
                 "summary": "修改 Namespace（labels / annotations）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Namespace 名称",
                         "name": "name",
                         "in": "query",
@@ -2822,7 +2859,7 @@ const docTemplate = `{
                 "summary": "获取 Node 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Node 名称",
                         "name": "name",
                         "in": "query",
@@ -2922,20 +2959,20 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Node 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码(从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量(默认20)",
                         "name": "limit",
                         "in": "query",
@@ -2976,7 +3013,7 @@ const docTemplate = `{
                 "summary": "获取 Node 指标（CPU/内存使用率）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Node 名称（为空=全局）",
                         "name": "name",
                         "in": "query"
@@ -3016,7 +3053,7 @@ const docTemplate = `{
                 "summary": "获取指定 Node 上的 Pod 列表",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Node 名称",
                         "name": "nodeName",
                         "in": "query",
@@ -3024,20 +3061,20 @@ const docTemplate = `{
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Pod 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码(从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量(默认20)",
                         "name": "limit",
                         "in": "query",
@@ -3079,14 +3116,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Pod名",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
@@ -3096,7 +3133,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3128,7 +3165,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Pod名",
                         "name": "name",
                         "in": "query",
@@ -3136,7 +3173,7 @@ const docTemplate = `{
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
@@ -3144,13 +3181,13 @@ const docTemplate = `{
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "容器名(可选; 多容器建议指定)",
                         "name": "container",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "仅返回最后N行(默认见配置)",
                         "name": "tail",
                         "in": "query"
@@ -3160,7 +3197,7 @@ const docTemplate = `{
                     "200": {
                         "description": "流式文本(EnableStreaming=true)",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3191,21 +3228,21 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Pod名",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "容器",
                         "name": "container",
                         "in": "query"
@@ -3215,7 +3252,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3246,14 +3283,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Pod名",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
@@ -3263,7 +3300,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3294,14 +3331,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Pod名",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
@@ -3311,7 +3348,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3399,27 +3436,27 @@ const docTemplate = `{
                 "summary": "删除 Pod",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Pod 名称",
                         "name": "name",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "优雅终止秒数（默认30）",
                         "name": "grace_seconds",
                         "in": "query"
                     },
                     {
-                        "types": "boolean",
+                        "type": "boolean",
                         "description": "是否强制删除（默认false）",
                         "name": "force",
                         "in": "query"
@@ -3429,7 +3466,7 @@ const docTemplate = `{
                     "200": {
                         "description": "删除请求已提交",
                         "schema": {
-                            "types": "object",
+                            "type": "object",
                             "additionalProperties": true
                         }
                     },
@@ -3461,14 +3498,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Pod名",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
@@ -3478,7 +3515,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3509,14 +3546,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Pod名",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
@@ -3526,7 +3563,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3557,27 +3594,27 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Pod名",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量",
                         "name": "limit",
                         "in": "query",
@@ -3588,7 +3625,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3634,7 +3671,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3677,7 +3714,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3752,7 +3789,7 @@ const docTemplate = `{
                 "summary": "删除 PersistentVolume",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "PersistentVolume 名称",
                         "name": "name",
                         "in": "query",
@@ -3763,7 +3800,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3792,7 +3829,7 @@ const docTemplate = `{
                 "summary": "获取 PersistentVolume 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "PersistentVolume 名称",
                         "name": "name",
                         "in": "query",
@@ -3834,20 +3871,20 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "PV 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码(从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量(默认20)",
                         "name": "limit",
                         "in": "query",
@@ -3887,7 +3924,7 @@ const docTemplate = `{
                 "summary": "修改 PersistentVolume 回收策略",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "PV 名称",
                         "name": "name",
                         "in": "query",
@@ -3899,7 +3936,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     }
                 ],
@@ -3907,7 +3944,7 @@ const docTemplate = `{
                     "200": {
                         "description": "修改成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -3982,14 +4019,14 @@ const docTemplate = `{
                 "summary": "删除 PersistentVolumeClaim",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "PVC 名称",
                         "name": "name",
                         "in": "query",
@@ -4030,14 +4067,14 @@ const docTemplate = `{
                 "summary": "获取 PersistentVolumeClaim 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "PersistentVolumeClaim 名称",
                         "name": "name",
                         "in": "query",
@@ -4084,7 +4121,7 @@ const docTemplate = `{
                 "summary": "获取 PVC 列表",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
@@ -4092,20 +4129,20 @@ const docTemplate = `{
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "PVC 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码(从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量(默认20)",
                         "name": "limit",
                         "in": "query",
@@ -4295,14 +4332,14 @@ const docTemplate = `{
                 "summary": "删除 Secret",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Secret 名称",
                         "name": "name",
                         "in": "query",
@@ -4313,7 +4350,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -4342,14 +4379,14 @@ const docTemplate = `{
                 "summary": "获取 Secret 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Secret 名称",
                         "name": "name",
                         "in": "query",
@@ -4360,7 +4397,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -4391,27 +4428,27 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Secret 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码 (从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量 (默认20)",
                         "name": "limit",
                         "in": "query",
@@ -4422,7 +4459,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -4454,14 +4491,14 @@ const docTemplate = `{
                 "summary": "Patch Secret（StrategicMergePatch）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Secret 名称",
                         "name": "name",
                         "in": "query",
@@ -4473,7 +4510,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     }
                 ],
@@ -4481,7 +4518,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -4513,14 +4550,14 @@ const docTemplate = `{
                 "summary": "Patch Secret（JSON Merge Patch – 覆盖式）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Secret 名称",
                         "name": "name",
                         "in": "query",
@@ -4532,7 +4569,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     }
                 ],
@@ -4540,7 +4577,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -4615,14 +4652,14 @@ const docTemplate = `{
                 "summary": "删除 Service",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Service 名称",
                         "name": "name",
                         "in": "query",
@@ -4633,7 +4670,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -4662,14 +4699,14 @@ const docTemplate = `{
                 "summary": "获取 Service 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Service 名称",
                         "name": "name",
                         "in": "query",
@@ -4680,7 +4717,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -4709,14 +4746,14 @@ const docTemplate = `{
                 "summary": "获取 Service Endpoints（core/v1）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Service 名称",
                         "name": "name",
                         "in": "query",
@@ -4727,7 +4764,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     }
                 }
@@ -4746,27 +4783,27 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "Service 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码 (从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量 (默认20)",
                         "name": "limit",
                         "in": "query",
@@ -4777,7 +4814,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -4809,14 +4846,14 @@ const docTemplate = `{
                 "summary": "Patch Service（StrategicMergePatch）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Service 名称",
                         "name": "name",
                         "in": "query",
@@ -4828,7 +4865,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     }
                 ],
@@ -4836,7 +4873,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -4868,14 +4905,14 @@ const docTemplate = `{
                 "summary": "Patch Service（JSON Merge Patch – 覆盖式）",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "Service 名称",
                         "name": "name",
                         "in": "query",
@@ -4887,7 +4924,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     }
                 ],
@@ -4895,7 +4932,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -4940,7 +4977,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -4978,14 +5015,14 @@ const docTemplate = `{
                 "summary": "删除 StatefulSet",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "StatefulSet 名称",
                         "name": "name",
                         "in": "query",
@@ -4996,7 +5033,7 @@ const docTemplate = `{
                     "200": {
                         "description": "示例: {\\\"namespace\\\":\\\"default\\\",\\\"name\\\":\\\"web\\\",\\\"status\\\":\\\"StatefulSet 删除成功\\\"}",
                         "schema": {
-                            "types": "object",
+                            "type": "object",
                             "additionalProperties": true
                         }
                     },
@@ -5041,9 +5078,9 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "types": "object",
+                            "type": "object",
                             "additionalProperties": {
-                                "types": "string"
+                                "type": "string"
                             }
                         }
                     }
@@ -5052,7 +5089,7 @@ const docTemplate = `{
                     "200": {
                         "description": "删除成功",
                         "schema": {
-                            "types": "object",
+                            "type": "object",
                             "additionalProperties": true
                         }
                     },
@@ -5092,14 +5129,14 @@ const docTemplate = `{
                 "summary": "获取 StatefulSet 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "命名空间",
                         "name": "namespace",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "StatefulSet 名称",
                         "name": "name",
                         "in": "query",
@@ -5110,7 +5147,7 @@ const docTemplate = `{
                     "200": {
                         "description": "获取详情成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -5143,19 +5180,19 @@ const docTemplate = `{
                 "summary": "获取 StatefulSet 列表",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "StatefulSet 名称关键字（模糊匹配）",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码（默认 1）",
                         "name": "page",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量（默认 10）",
                         "name": "limit",
                         "in": "query"
@@ -5165,7 +5202,7 @@ const docTemplate = `{
                     "200": {
                         "description": "查询成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -5211,7 +5248,7 @@ const docTemplate = `{
                     "200": {
                         "description": "重启成功，返回命名空间、名称与触发时间等信息",
                         "schema": {
-                            "types": "object",
+                            "type": "object",
                             "additionalProperties": true
                         }
                     },
@@ -5264,7 +5301,7 @@ const docTemplate = `{
                     "200": {
                         "description": "扩缩容成功，返回修改前后及当前副本信息",
                         "schema": {
-                            "types": "object",
+                            "type": "object",
                             "additionalProperties": true
                         }
                     },
@@ -5317,7 +5354,7 @@ const docTemplate = `{
                     "200": {
                         "description": "更新成功，返回资源版本与副本进度",
                         "schema": {
-                            "types": "object",
+                            "type": "object",
                             "additionalProperties": true
                         }
                     },
@@ -5405,7 +5442,7 @@ const docTemplate = `{
                 "summary": "删除 StorageClass",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "StorageClass 名称",
                         "name": "name",
                         "in": "query",
@@ -5445,7 +5482,7 @@ const docTemplate = `{
                 "summary": "获取 StorageClass 详情",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "StorageClass 名称",
                         "name": "name",
                         "in": "query",
@@ -5456,7 +5493,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -5487,20 +5524,20 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "StorageClass 名称(模糊匹配)",
                         "name": "name",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码 (从1开始)",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量 (默认20)",
                         "name": "limit",
                         "in": "query",
@@ -5511,7 +5548,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -5554,7 +5591,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -5597,7 +5634,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -5633,20 +5670,20 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "maxLength": 100,
-                        "types": "string",
+                        "type": "string",
                         "description": "用户名",
                         "name": "username",
                         "in": "query"
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "页码",
                         "name": "page",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "types": "integer",
+                        "type": "integer",
                         "description": "每页数量",
                         "name": "limit",
                         "in": "query",
@@ -5657,7 +5694,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -5700,7 +5737,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "types": "string"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -5730,7 +5767,7 @@ const docTemplate = `{
                 "summary": "获取调试 Session 信息",
                 "parameters": [
                     {
-                        "types": "string",
+                        "type": "string",
                         "description": "用户名（可选，用于计算 MD5 作为 session key），默认 admin",
                         "name": "user",
                         "in": "query"
@@ -5740,7 +5777,7 @@ const docTemplate = `{
                     "200": {
                         "description": "返回会话信息或 empty",
                         "schema": {
-                            "types": "object",
+                            "type": "object",
                             "additionalProperties": true
                         }
                     },
@@ -5756,154 +5793,154 @@ const docTemplate = `{
     },
     "definitions": {
         "errorcode.Error": {
-            "types": "object"
+            "type": "object"
         },
         "requests.AuthLoginRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "password": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "username": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.BasicAuthFields": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "password": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "username": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.CommonIdRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "id": {
-                    "types": "integer"
+                    "type": "integer"
                 }
             }
         },
         "requests.DockerFields": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "auth": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "email": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "password": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "server": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "username": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.EnvironmentVariable": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "name": {
                     "description": "环境变量名",
-                    "types": "string"
+                    "type": "string"
                 },
                 "value": {
                     "description": "环境变量值",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.HealthCheckDetail": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "command": {
                     "description": "Type=Command 时使用",
-                    "types": "string"
+                    "type": "string"
                 },
                 "failure_threshold": {
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "http_header": {
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.HttpHeader"
                     }
                 },
                 "initial_delay_seconds": {
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "path": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "period_seconds": {
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "port": {
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "protocol": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "success_threshold": {
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "timeout_seconds": {
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "types": {
                     "description": "HTTP|TCP|Command",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.HttpHeader": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "value": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.IngressPathRule": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "path": {
                     "description": "访问路径（如 /、/api、/api/(.*)）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "path_type": {
                     "description": "pathType: Exact / Prefix / ImplementationSpecific",
-                    "types": "string"
+                    "type": "string"
                 },
                 "service_name": {
                     "description": "后端 Service 名称",
-                    "types": "string"
+                    "type": "string"
                 },
                 "service_port": {
                     "description": "后端 Service 端口（支持命名端口，故用字符串；可传 \"80\" 或 \"http\"）",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.IngressRule": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "host": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "paths": {
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.IngressPathRule"
                     }
@@ -5911,231 +5948,246 @@ const docTemplate = `{
             }
         },
         "requests.IngressTLS": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "hosts": {
-                    "types": "array",
+                    "type": "array",
                     "items": {
-                        "types": "string"
+                        "type": "string"
                     }
                 },
                 "secret_name": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.K8sClusterCreateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "cluster_name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "cluster_version": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "kube_config": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.K8sClusterDeleteRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "cluster_name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "force": {
                     "description": "可选：是否强制删除",
-                    "types": "boolean"
+                    "type": "boolean"
                 },
                 "id": {
-                    "types": "integer"
+                    "type": "integer"
                 }
             }
         },
         "requests.K8sClusterInitRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "id": {
-                    "types": "integer"
+                    "type": "integer"
                 }
             }
         },
         "requests.K8sClusterUpdateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "cluster_name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "cluster_version": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "id": {
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "kube_config": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "status": {
-                    "types": "integer"
+                    "type": "integer"
                 }
             }
         },
         "requests.KubeConfigMapCreateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "annotations": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "binaryData": {
-                    "types": "object",
+                    "type": "object",
                     "additionalProperties": {
-                        "types": "array",
+                        "type": "array",
                         "items": {
-                            "types": "integer",
+                            "type": "integer",
                             "format": "int32"
                         }
                     }
                 },
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "data": {
                     "description": "ConfigMap 的数据部分：文本型与二进制型",
-                    "types": "string"
+                    "type": "string"
                 },
                 "labels": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeCronJobCreateRequest": {
-            "types": "object"
+            "type": "object"
         },
         "requests.KubeCronJobDeleteRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "cascade": {
                     "description": "是否级联清理：通常删除 CronJob 时是否一并清理其历史 Job",
-                    "types": "boolean"
+                    "type": "boolean"
+                },
+                "cluster_id": {
+                    "type": "integer"
                 },
                 "force": {
-                    "types": "boolean"
+                    "type": "boolean"
                 },
                 "grace_period_seconds": {
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "timeout_seconds": {
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "wait": {
-                    "types": "boolean"
+                    "type": "boolean"
                 }
             }
         },
         "requests.KubeCronJobSuspendRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "suspend": {
                     "description": "true=暂停，false=恢复",
-                    "types": "boolean"
+                    "type": "boolean"
                 }
             }
         },
         "requests.KubeDaemonSetCreateRequest": {
-            "types": "object"
+            "type": "object"
         },
         "requests.KubeDaemonSetRollbackRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "revision_name": {
                     "description": "指定回滚到的历史版本（ControllerRevision）\n建议用 revision_name（更直观），如果你喜欢数字 revision 也可以再加一个 int64 字段做二选一",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeDaemonSetUpdateImageRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "container": {
                     "description": "目标容器名称",
-                    "types": "string"
+                    "type": "string"
                 },
                 "image": {
                     "description": "新镜像地址，例如 nginx:1.27",
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeDeploymentCreateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "container_command": {
                     "description": "容器启动命令（可选）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "container_command_args": {
                     "description": "容器启动参数（可选）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "container_image": {
                     "description": "容器镜像",
-                    "types": "string"
+                    "type": "string"
                 },
                 "cpu_requirement": {
                     "description": "CPU 需求（可选）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "description": {
                     "description": "描述信息（可选）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "image_pull_secret": {
                     "description": "镜像拉取密钥（可选）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "is_create_service": {
                     "description": "是否同时创建 Service",
-                    "types": "boolean"
+                    "type": "boolean"
                 },
                 "is_liveness_enable": {
                     "description": "是否启用 Liveness 探针",
-                    "types": "boolean"
+                    "type": "boolean"
                 },
                 "is_readiness_enable": {
                     "description": "是否启用 Readiness 探针",
-                    "types": "boolean"
+                    "type": "boolean"
                 },
                 "labels": {
                     "description": "标签",
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.Label"
                     }
@@ -6150,19 +6202,19 @@ const docTemplate = `{
                 },
                 "memory_requirement": {
                     "description": "内存需求（可选）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
                     "description": "Deployment 名称",
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
                     "description": "命名空间",
-                    "types": "string"
+                    "type": "string"
                 },
                 "port_mappings": {
                     "description": "容器端口映射",
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.PortMapping"
                     }
@@ -6177,23 +6229,23 @@ const docTemplate = `{
                 },
                 "replicas": {
                     "description": "副本数",
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "run_as_privileged": {
                     "description": "是否以特权模式运行",
-                    "types": "boolean"
+                    "type": "boolean"
                 },
                 "service_name": {
                     "description": "Service 名称",
-                    "types": "string"
+                    "type": "string"
                 },
                 "service_type": {
                     "description": "Service 类型",
-                    "types": "string"
+                    "type": "string"
                 },
                 "variables": {
                     "description": "环境变量",
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.EnvironmentVariable"
                     }
@@ -6201,99 +6253,111 @@ const docTemplate = `{
             }
         },
         "requests.KubeDeploymentRestartRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeDeploymentRollbackRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "replica_set": {
                     "description": "指定回滚的 ReplicaSet",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeDeploymentScaleRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "scale_num": {
                     "description": "副本数量",
-                    "types": "integer"
+                    "type": "integer"
                 }
             }
         },
         "requests.KubeDeploymentUpdateImageRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "container": {
                     "description": "目标容器名称",
-                    "types": "string"
+                    "type": "string"
                 },
                 "image": {
                     "description": "新镜像地址，例如 nginx:1.27",
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeDeploymentUpdateRequest": {
-            "types": "object"
+            "type": "object"
         },
         "requests.KubeIngressCreateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "annotations": {
                     "description": "可选注解（如 rewrite、限流等）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "ingress_class_name": {
                     "description": "例如：\"nginx\"、\"traefik\"；可为空（走默认 class）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "labels": {
                     "description": "可选标签",
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "rules": {
                     "description": "规则：支持多个 host",
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.IngressRule"
                     }
                 },
                 "tls": {
                     "description": "可选 TLS 列表",
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.IngressTLS"
                     }
@@ -6301,169 +6365,178 @@ const docTemplate = `{
             }
         },
         "requests.KubeJobCreateRequest": {
-            "types": "object"
+            "type": "object"
         },
         "requests.KubeJobRestartRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeJobSuspendRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "suspend": {
                     "description": "true=挂起，false=恢复",
-                    "types": "boolean"
+                    "type": "boolean"
                 }
             }
         },
         "requests.KubeNamespaceCreateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "annotations": {
-                    "types": "object"
+                    "type": "object"
                 },
                 "description": {
                     "description": "描述信息（可选） -\u003e 写入 annotation",
-                    "types": "string"
+                    "type": "string"
                 },
                 "labels": {
                     "description": "Labels（可选）",
-                    "types": "object"
+                    "type": "object"
                 },
                 "name": {
                     "description": "Namespace 名称（必填）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "quota_cpu": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "quota_memory": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "quota_pods": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeNamespaceUpdateRequest": {
-            "types": "object"
+            "type": "object"
         },
         "requests.KubeNodeCordonRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "nodeName": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "unschedulable": {
-                    "types": "boolean"
+                    "type": "boolean"
                 }
             }
         },
         "requests.KubeNodeUncordonRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "nodeName": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubePVCCreateRequest": {
-            "types": "object"
+            "type": "object"
         },
         "requests.KubePVCResizeRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "storage": {
                     "description": "e.g. \"20Gi\"",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubePVCreateRequest": {
-            "types": "object"
+            "type": "object"
         },
         "requests.KubePodEvictRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "podName": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubePodUpdateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "content": {
                     "description": "原始 Pod JSON",
-                    "types": "object"
+                    "type": "object"
                 },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeSecretCreateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "annotations": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "basic": {
                     "$ref": "#/definitions/requests.BasicAuthFields"
                 },
                 "data": {
                     "description": "通用键值（Opaque 或直接键值对）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "docker": {
                     "$ref": "#/definitions/requests.DockerFields"
                 },
                 "labels": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "mode": {
                     "description": "推荐传 mode（更语义化），兼容 types（原生 k8s 类型字符串）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "ssh": {
                     "$ref": "#/definitions/requests.SSHAuthFields"
                 },
                 "string_data": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "tls": {
                     "description": "专用结构体",
@@ -6474,116 +6547,116 @@ const docTemplate = `{
                     ]
                 },
                 "types": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeSecretDecodeRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "data": {
                     "description": "批量解码，例如 {\"username\": \"YWRtaW4=\", \"password\": \"MTIzNDU2\"}",
-                    "types": "object",
+                    "type": "object",
                     "additionalProperties": {
-                        "types": "string"
+                        "type": "string"
                     }
                 },
                 "value": {
                     "description": "单个字符串解码，例如 \"YWRtaW4=\"",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeServiceCreateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "annotations": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "cluster_ip": {
                     "description": "可选项",
-                    "types": "string"
+                    "type": "string"
                 },
                 "external_traffic_policy": {
                     "description": "Local / Cluster（LB/NodePort 常用）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
                     "description": "命名空间 \u0026 名称",
-                    "types": "string"
+                    "type": "string"
                 },
                 "ports": {
                     "description": "端口规则",
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.ServicePortRule"
                     }
                 },
                 "selector": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "selector_labels": {
                     "description": "选择器：建议用 label 列表；也支持传 map（Swagger 里以字符串展示）",
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.Label"
                     }
                 },
                 "session_affinity": {
                     "description": "None / ClientIP",
-                    "types": "string"
+                    "type": "string"
                 },
                 "types": {
                     "description": "Service 类型：ClusterIP / NodePort / LoadBalancer / Headless\nHeadless 时 cluster_ip 建议传 \"None\"",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeStatefulSetCreateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "container_command": {
                     "description": "容器启动命令",
-                    "types": "string"
+                    "type": "string"
                 },
                 "container_command_args": {
                     "description": "容器启动参数",
-                    "types": "string"
+                    "type": "string"
                 },
                 "container_image": {
                     "description": "主容器镜像",
-                    "types": "string"
+                    "type": "string"
                 },
                 "cpu_requirement": {
                     "description": "CPU 需求（可选）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "description": {
                     "description": "描述信息（可选）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "image_pull_secret": {
                     "description": "镜像/启动相关（可选）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "is_create_service": {
                     "description": "Service 相关（StatefulSet 必须绑定一个服务名，通常为 Headless Service）",
-                    "types": "boolean"
+                    "type": "boolean"
                 },
                 "is_liveness_enable": {
                     "description": "是否启用 Liveness",
-                    "types": "boolean"
+                    "type": "boolean"
                 },
                 "is_readiness_enable": {
                     "description": "是否启用 Readiness",
-                    "types": "boolean"
+                    "type": "boolean"
                 },
                 "labels": {
                     "description": "标签",
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.Label"
                     }
@@ -6598,19 +6671,19 @@ const docTemplate = `{
                 },
                 "memory_requirement": {
                     "description": "资源/标签/环境变量/端口",
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
                     "description": "基本信息",
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
                     "description": "命名空间",
-                    "types": "string"
+                    "type": "string"
                 },
                 "port_mappings": {
                     "description": "端口映射",
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.PortMapping"
                     }
@@ -6625,30 +6698,30 @@ const docTemplate = `{
                 },
                 "replicas": {
                     "description": "副本数",
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "run_as_privileged": {
                     "description": "探针/特权",
-                    "types": "boolean"
+                    "type": "boolean"
                 },
                 "service_name": {
                     "description": "必填：绑定的 Service 名（Headless 推荐）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "service_type": {
                     "description": "Service 类型（ClusterIP/NodePort/...；Headless 时忽略）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "variables": {
                     "description": "环境变量",
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.EnvironmentVariable"
                     }
                 },
                 "volume_claim_templates": {
                     "description": "每个 Pod 的独立 PVC（StatefulSet 常用）",
-                    "types": "array",
+                    "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.VolumeClaimTemplate"
                     }
@@ -6656,244 +6729,253 @@ const docTemplate = `{
             }
         },
         "requests.KubeStatefulSetRestartRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeStatefulSetScaleRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "scale_num": {
                     "description": "副本数量",
-                    "types": "integer"
+                    "type": "integer"
                 }
             }
         },
         "requests.KubeStatefulSetUpdateImageRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "container": {
                     "description": "目标容器名称",
-                    "types": "string"
+                    "type": "string"
                 },
                 "image": {
                     "description": "新镜像地址，例如 mysql:8.0",
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.KubeStorageClassCreateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "allowVolumeExpansion": {
-                    "types": "boolean"
+                    "type": "boolean"
                 },
                 "mountOptions": {
-                    "types": "array",
+                    "type": "array",
                     "items": {
-                        "types": "string"
+                        "type": "string"
                     }
                 },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "parameters": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "provisioner": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "reclaimPolicy": {
                     "description": "Delete / Retain",
-                    "types": "string"
+                    "type": "string"
                 },
                 "volumeBindingMode": {
                     "description": "Immediate / WaitForFirstConsumer",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.Label": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "key": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "value": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.PatchPodImageRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "container": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "namespace": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "new_image": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.PortMapping": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "port": {
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "protocol": {
                     "description": "TCP/UDP/SCTP",
-                    "types": "string"
+                    "type": "string"
                 },
                 "target_port": {
-                    "types": "integer"
+                    "type": "integer"
                 }
             }
         },
         "requests.SSHAuthFields": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "known_hosts": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "private_key": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.ServicePortRule": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "app_protocol": {
                     "description": "App 协议（可选）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
                     "description": "端口名，可选",
-                    "types": "string"
+                    "type": "string"
                 },
                 "node_port": {
                     "description": "NodePort（仅在 NodePort/LoadBalancer 类型下生效），可选",
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "port": {
                     "description": "Service 暴露端口（1~65535）",
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "protocol": {
                     "description": "协议：TCP/UDP/SCTP",
-                    "types": "string"
+                    "type": "string"
                 },
                 "target_port": {
                     "description": "指向 Pod 的容器端口；为兼容命名端口，这里用字符串（Swagger 友好）",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.TLSFields": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "cert": {
                     "description": "-\u003e tls.crt",
-                    "types": "string"
+                    "type": "string"
                 },
                 "key": {
                     "description": "-\u003e tls.key",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.UserCreateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "password": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "password_confirm": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "username": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.UserUpdateRequest": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "id": {
-                    "types": "integer"
+                    "type": "integer"
                 },
                 "password": {
-                    "types": "string"
+                    "type": "string"
                 },
                 "username": {
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "requests.VolumeClaimTemplate": {
-            "types": "object",
+            "type": "object",
             "properties": {
                 "access_mode": {
                     "description": "例如 ReadWriteOnce",
-                    "types": "string"
+                    "type": "string"
                 },
                 "mount_path": {
                     "description": "容器内挂载路径",
-                    "types": "string"
+                    "type": "string"
                 },
                 "name": {
                     "description": "PVC 名称（与 volumeMounts 对应）",
-                    "types": "string"
+                    "type": "string"
                 },
                 "storage_class": {
                     "description": "存储类",
-                    "types": "string"
+                    "type": "string"
                 },
                 "storage_size": {
                     "description": "例如 \"5Gi\"",
-                    "types": "string"
+                    "type": "string"
                 }
             }
         },
         "response.Response": {
-            "types": "object"
+            "type": "object"
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "K8s管理平台",
-	Description:      "基于Gin+Vue开发的K8s管理平台",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

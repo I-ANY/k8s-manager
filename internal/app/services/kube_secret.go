@@ -80,7 +80,11 @@ func (s *Services) KubeConfigMapPatch(
 	ctx context.Context,
 	param *requests.KubeConfigMapUpdateRequest,
 ) (*corev1.ConfigMap, error) {
-	return configmap.PatchConfigMap(s.App().K8sClient(), ctx, param.Namespace, param.Name, []byte(param.Content))
+	client, err := s.K8sClient(ctx, param.ClusterID)
+	if err != nil {
+		return nil, err
+	}
+	return configmap.PatchConfigMap(client, ctx, param.Namespace, param.Name, []byte(param.Content))
 }
 
 // JSON Merge Patch（覆盖式更新）
@@ -88,6 +92,11 @@ func (s *Services) KubeConfigMapUpdate(
 	ctx context.Context,
 	req *requests.KubeConfigMapUpdateRequest,
 ) (*corev1.ConfigMap, error) {
+	client, err := s.K8sClient(ctx, req.ClusterID)
+	if err != nil {
+		return nil, err
+	}
+
 	c, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -101,7 +110,7 @@ func (s *Services) KubeConfigMapUpdate(
 	cm.Namespace = req.Namespace
 
 	// 为了 Update 成功：拿旧对象的 ResourceVersion（防止冲突）
-	old, err := s.App().KubeClient.CoreV1().
+	old, err := client.Interface.CoreV1().
 		ConfigMaps(req.Namespace).
 		Get(c, cm.Name, metav1.GetOptions{})
 	if err != nil {
@@ -112,7 +121,7 @@ func (s *Services) KubeConfigMapUpdate(
 	}
 
 	// 执行全量覆盖
-	updated, err := s.App().KubeClient.CoreV1().
+	updated, err := client.Interface.CoreV1().
 		ConfigMaps(req.Namespace).
 		Update(c, &cm, metav1.UpdateOptions{})
 	if err != nil {

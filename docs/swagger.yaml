@@ -67,7 +67,7 @@ definitions:
         type: integer
       timeout_seconds:
         type: integer
-      type:
+      types:
         description: HTTP|TCP|Command
         type: string
     type: object
@@ -159,6 +159,8 @@ definitions:
             type: integer
           type: array
         type: object
+      cluster_id:
+        type: integer
       data:
         description: ConfigMap 的数据部分：文本型与二进制型
         type: string
@@ -176,6 +178,8 @@ definitions:
       cascade:
         description: 是否级联清理：通常删除 CronJob 时是否一并清理其历史 Job
         type: boolean
+      cluster_id:
+        type: integer
       force:
         type: boolean
       grace_period_seconds:
@@ -191,6 +195,8 @@ definitions:
     type: object
   requests.KubeCronJobSuspendRequest:
     properties:
+      cluster_id:
+        type: integer
       name:
         type: string
       namespace:
@@ -203,6 +209,8 @@ definitions:
     type: object
   requests.KubeDaemonSetRollbackRequest:
     properties:
+      cluster_id:
+        type: integer
       name:
         type: string
       namespace:
@@ -215,6 +223,8 @@ definitions:
     type: object
   requests.KubeDaemonSetUpdateImageRequest:
     properties:
+      cluster_id:
+        type: integer
       container:
         description: 目标容器名称
         type: string
@@ -302,6 +312,8 @@ definitions:
     type: object
   requests.KubeDeploymentRestartRequest:
     properties:
+      cluster_id:
+        type: integer
       name:
         type: string
       namespace:
@@ -309,6 +321,8 @@ definitions:
     type: object
   requests.KubeDeploymentRollbackRequest:
     properties:
+      cluster_id:
+        type: integer
       name:
         type: string
       namespace:
@@ -319,6 +333,8 @@ definitions:
     type: object
   requests.KubeDeploymentScaleRequest:
     properties:
+      cluster_id:
+        type: integer
       name:
         type: string
       namespace:
@@ -329,6 +345,8 @@ definitions:
     type: object
   requests.KubeDeploymentUpdateImageRequest:
     properties:
+      cluster_id:
+        type: integer
       container:
         description: 目标容器名称
         type: string
@@ -372,6 +390,8 @@ definitions:
     type: object
   requests.KubeJobRestartRequest:
     properties:
+      cluster_id:
+        type: integer
       name:
         type: string
       namespace:
@@ -379,6 +399,8 @@ definitions:
     type: object
   requests.KubeJobSuspendRequest:
     properties:
+      cluster_id:
+        type: integer
       name:
         type: string
       namespace:
@@ -446,6 +468,8 @@ definitions:
     type: object
   requests.KubePodUpdateRequest:
     properties:
+      cluster_id:
+        type: integer
       content:
         description: 原始 Pod JSON
         type: object
@@ -482,7 +506,7 @@ definitions:
         allOf:
         - $ref: '#/definitions/requests.TLSFields'
         description: 专用结构体
-      type:
+      types:
         type: string
     type: object
   requests.KubeSecretDecodeRequest:
@@ -526,7 +550,7 @@ definitions:
       session_affinity:
         description: None / ClientIP
         type: string
-      type:
+      types:
         description: |-
           Service 类型：ClusterIP / NodePort / LoadBalancer / Headless
           Headless 时 cluster_ip 建议传 "None"
@@ -613,6 +637,8 @@ definitions:
     type: object
   requests.KubeStatefulSetRestartRequest:
     properties:
+      cluster_id:
+        type: integer
       name:
         type: string
       namespace:
@@ -620,6 +646,8 @@ definitions:
     type: object
   requests.KubeStatefulSetScaleRequest:
     properties:
+      cluster_id:
+        type: integer
       name:
         type: string
       namespace:
@@ -630,6 +658,8 @@ definitions:
     type: object
   requests.KubeStatefulSetUpdateImageRequest:
     properties:
+      cluster_id:
+        type: integer
       container:
         description: 目标容器名称
         type: string
@@ -767,10 +797,6 @@ definitions:
     type: object
 info:
   contact: {}
-  description: 基于Gin+Vue开发的K8s管理平台
-  termsOfService: https://gitee.com/jay-kim/k8s_operation
-  title: K8s管理平台
-  version: "1.0"
 paths:
   /api/:
     get:
@@ -990,6 +1016,11 @@ paths:
       - application/json
       description: 创建 Kubernetes ConfigMap（支持 data 与 binaryData）
       parameters:
+      - description: 集群ID，不传则使用默认集群
+        in: body
+        name: cluster_id
+        schema:
+          type: integer
       - description: ConfigMap 创建参数
         in: body
         name: body
@@ -1017,6 +1048,10 @@ paths:
   /api/v1/k8s/configmap/delete:
     delete:
       parameters:
+      - description: 集群ID，不传则使用默认集群
+        in: query
+        name: cluster_id
+        type: integer
       - description: 命名空间
         in: query
         name: namespace
@@ -1048,6 +1083,10 @@ paths:
   /api/v1/k8s/configmap/detail:
     get:
       parameters:
+      - description: 集群ID，不传则使用默认集群
+        in: query
+        name: cluster_id
+        type: integer
       - description: 命名空间
         in: query
         name: namespace
@@ -1080,6 +1119,10 @@ paths:
     get:
       description: 支持分页、命名空间过滤、名称模糊查询
       parameters:
+      - description: 集群ID，不传则使用默认集群
+        in: query
+        name: cluster_id
+        type: integer
       - description: 命名空间
         in: query
         maxLength: 100
@@ -1123,6 +1166,10 @@ paths:
       consumes:
       - application/strategic-merge-patch+json
       parameters:
+      - description: 集群ID，不传则使用默认集群
+        in: query
+        name: cluster_id
+        type: integer
       - description: 命名空间
         in: query
         name: namespace
@@ -1162,6 +1209,10 @@ paths:
       consumes:
       - application/merge-patch+json
       parameters:
+      - description: 集群ID，不传则使用默认集群
+        in: query
+        name: cluster_id
+        type: integer
       - description: 命名空间
         in: query
         name: namespace
@@ -1755,7 +1806,7 @@ paths:
         type: string
       - description: 事件类型（Normal | Warning）
         in: query
-        name: type
+        name: types
         type: string
       - description: 事件原因（如 FailedScheduling/BackOff）
         in: query
